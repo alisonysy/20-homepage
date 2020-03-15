@@ -4,12 +4,12 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
-import {leanCloudId,leanCloudKey} from './data-service/leancloud.config';
+import {leanCloudId,leanCloudKey,serverUrl} from './data-service/leancloud.config';
 var AV = require('leancloud-storage');
 AV.init({
   appId: leanCloudId,
   appKey: leanCloudKey,
-  serverURLs: "http://localhost:3000"
+  serverURLs: serverUrl
 });
 
 console.log('av is',AV)
