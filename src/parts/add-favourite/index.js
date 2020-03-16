@@ -1,12 +1,41 @@
-import React from 'react';
+import React, {useRef,useEffect, useState} from 'react';
 // import './style.css';
 
-import { Modal, Button, Form, Input } from 'antd';
+import { Modal, Button, Form, Input, Tag } from 'antd';
 
 import {saveData} from './data-handling';
 
+function TagField({rules,layout,outputTags}){
+
+  const addTags = (e) => {
+    console.log('----add tags submit',e);
+  };
+
+  const onTagInputChange = (e) => {
+    console.log('tag input',e.target.value);
+    if(e.target.value.indexOf(',') !== -1){
+      let tag = e.target.value.slice(0,-1);
+      console.log(tag);
+      outputTags(tag);
+    }
+  }
+  return (
+      <Form.Item label="Tags" {...layout} >
+        <Input.Group compact>
+          <Form.Item name="tags" rules={rules} >
+            <Input onChange={onTagInputChange} />
+          </Form.Item>
+          <Button type="primary" htmlType="button" shape="round" onClick={addTags}>
+            +
+          </Button>
+        </Input.Group>
+      </Form.Item>
+  )
+}
+
 /* domain, url, title, category, tags[], key(keyborad), icon-url */ 
 function AddFavouriteForm(props){
+  let [tags,setTags] = useState([]);
 
   let validation = (isRequired,msg) => {
     return {
@@ -25,6 +54,11 @@ function AddFavouriteForm(props){
       console.log(res);
     }).catch((e)=>{console.log(e)})
   };
+
+  const outputTags = (tag) => {
+    console.log(tag);
+    setTags(tags.push(tag));
+  }
 
   const formItemLayout = {
     labelCol:{span:4},
@@ -61,9 +95,17 @@ function AddFavouriteForm(props){
       <Form.Item label="Key" name="key" rules={[validation(false,'')]} {...formItemLayout}>
         <Input placeholder="A single alphanumeric to press"/>
       </Form.Item>
-      <Form.Item label="Tags" name="tags" rules={[validation(false,'')]} {...formItemLayout}>
+      {/* <Form.Item label="Tags" name="tags" rules={[validation(false,'')]} {...formItemLayout}>
         <Input placeholder="Use ',' to separate different tags" />
-      </Form.Item>
+      </Form.Item> */}
+      <TagField rules={[validation(false,'')]} layout={formItemLayout} outputTags={outputTags}/>
+      {tags.length>0? (<div>
+        {tags.map((t)=>{
+          return (
+            <Tag>{t}</Tag>
+          );
+        })}
+      </div>) : null}
       <Form.Item {...formItemTailLayout}>
         <Button type="primary" htmlType="submit">
           Add
@@ -107,11 +149,7 @@ export default class AddFavourite extends React.Component{
 
           style={{borderRadius:'5%'}}
           onCancel={this.onFormCancel}
-          footer={[
-            <Button key="back" onClick={this.onFormCancel}>
-              Return
-            </Button>,
-          ]}
+          footer={null}
         >
           <AddFavouriteForm />
         </Modal>
