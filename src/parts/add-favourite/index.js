@@ -1,7 +1,7 @@
 import React, {useRef,useEffect, useState} from 'react';
-// import './style.css';
+import './style.css';
 
-import { Modal, Button, Form, Input, Tag } from 'antd';
+import { Modal, Button, Form, Input, Tag, Row, Col } from 'antd';
 
 import {saveData} from './data-handling';
 
@@ -12,20 +12,19 @@ function TagField({rules,layout,outputTags}){
   };
 
   const onTagInputChange = (e) => {
-    console.log('tag input',e.target.value);
     if(e.target.value.indexOf(',') !== -1){
       let tag = e.target.value.slice(0,-1);
-      console.log(tag);
       outputTags(tag);
     }
-  }
+  };
+
   return (
-      <Form.Item label="Tags" {...layout} >
+      <Form.Item label="Tags" {...layout} className="addFavouriteForm--tags">
         <Input.Group compact>
-          <Form.Item name="tags" rules={rules} >
-            <Input onChange={onTagInputChange} />
+          <Form.Item name="tags" rules={rules} className="addFavouriteForm--tags_input">
+            <Input onChange={onTagInputChange} placeholder="A tag will be generated once there is ','." />
           </Form.Item>
-          <Button type="primary" htmlType="button" shape="round" onClick={addTags}>
+          <Button type="primary" htmlType="button" shape="round" onClick={addTags} style={{marginLeft:'.5em'}}>
             +
           </Button>
         </Input.Group>
@@ -35,7 +34,8 @@ function TagField({rules,layout,outputTags}){
 
 /* domain, url, title, category, tags[], key(keyborad), icon-url */ 
 function AddFavouriteForm(props){
-  let [tags,setTags] = useState([]);
+  const [form] = Form.useForm();
+  let [tagsArr,setTagsArr] = useState([]);
 
   let validation = (isRequired,msg) => {
     return {
@@ -57,7 +57,11 @@ function AddFavouriteForm(props){
 
   const outputTags = (tag) => {
     console.log(tag);
-    setTags(tags.push(tag));
+    // #notes: cannot use tagsArr.push(tag) because Array.prototype.push() returns the number of the modified array
+    setTagsArr((prev) =>{ 
+      return [...prev,tag]
+    });
+    form.setFieldsValue({tags:''});
   }
 
   const formItemLayout = {
@@ -72,6 +76,8 @@ function AddFavouriteForm(props){
   return (
     <Form 
       onFinish={formSubmit}
+      form={form}
+      className="addFavouriteForm"
     >
       <Form.Item label="Title" name="title" rules={[validation(true,'Give me a name!')]} {...formItemLayout}>
         <Input />
@@ -99,13 +105,14 @@ function AddFavouriteForm(props){
         <Input placeholder="Use ',' to separate different tags" />
       </Form.Item> */}
       <TagField rules={[validation(false,'')]} layout={formItemLayout} outputTags={outputTags}/>
-      {tags.length>0? (<div>
-        {tags.map((t)=>{
+      {tagsArr.length>0? (<Row className="addFavouriteForm--tagsBoard">
+        <Col span={formItemLayout.labelCol.span}></Col>
+        {tagsArr.map((t)=>{
           return (
             <Tag>{t}</Tag>
           );
         })}
-      </div>) : null}
+      </Row>) : null}
       <Form.Item {...formItemTailLayout}>
         <Button type="primary" htmlType="submit">
           Add
