@@ -36,6 +36,7 @@ function TagField({rules,layout,outputTags}){
 function AddFavouriteForm(props){
   const [form] = Form.useForm();
   let [tagsArr,setTagsArr] = useState([]);
+  let [loading,setLoading] = useState(false);
 
   let validation = (isRequired,msg) => {
     return {
@@ -45,14 +46,17 @@ function AddFavouriteForm(props){
   };
 
   const formSubmit = (values) => {
+    setLoading(true);
     console.log('form submitted',values);
     let fields=[];
     for(var key in values){
-      fields.push({name:key,value:values[key]});
+      fields.push({name:key,value: key === 'tags'? tagsArr : values[key]});
     }
     saveData('Favourites',fields).then((res)=>{
       console.log(res);
+      props.closeModal();
     }).catch((e)=>{console.log(e)})
+      .finally(()=> setLoading(false));
   };
 
   const outputTags = (tag) => {
@@ -84,37 +88,34 @@ function AddFavouriteForm(props){
       </Form.Item>
       <Form.Item label="Website" {...formItemLayout}>
         <Input.Group compact>
-          <Form.Item name={['domain']} rules={[validation(false,'')]}>
-            <Input placeholder="Website's domain" />
-          </Form.Item>
-          <Form.Item name={['url']} rules={[validation(true,'Give me a url!')]} style={{marginLeft:'0.5em'}}>
+          <Form.Item name={['url']} rules={[validation(true,'Give me a url!')]} style={{marginBottom:0}}>
             <Input placeholder="Website's full url"/>
+          </Form.Item>
+          <Form.Item name={['domain']} rules={[validation(false,'')]} style={{marginLeft:'0.5em',marginBottom:0}}>
+            <Input placeholder="Website's domain" />
           </Form.Item>
         </Input.Group>
       </Form.Item>
       <Form.Item label="Icon" name="icon" rules={[validation(false,'')]} {...formItemLayout}>
         <Input placeholder="Image url"/>
       </Form.Item>
-      <Form.Item label="Category" name="category" rules={[validation(false,'')]}>
+      <Form.Item label="Category" name="category" rules={[validation(false,'')]} {...formItemLayout}>
         <Input />
       </Form.Item>
       <Form.Item label="Key" name="key" rules={[validation(false,'')]} {...formItemLayout}>
         <Input placeholder="A single alphanumeric to press"/>
       </Form.Item>
-      {/* <Form.Item label="Tags" name="tags" rules={[validation(false,'')]} {...formItemLayout}>
-        <Input placeholder="Use ',' to separate different tags" />
-      </Form.Item> */}
       <TagField rules={[validation(false,'')]} layout={formItemLayout} outputTags={outputTags}/>
       {tagsArr.length>0? (<Row className="addFavouriteForm--tagsBoard">
         <Col span={formItemLayout.labelCol.span}></Col>
         {tagsArr.map((t)=>{
           return (
-            <Tag>{t}</Tag>
+            <Tag key={ "tag-"+ t}>{t}</Tag>
           );
         })}
       </Row>) : null}
       <Form.Item {...formItemTailLayout}>
-        <Button type="primary" htmlType="submit">
+        <Button type="primary" htmlType="submit" loading={loading}>
           Add
         </Button>
       </Form.Item>
@@ -139,7 +140,6 @@ export default class AddFavourite extends React.Component{
 
   onFormCancel(e){
     this.setState({ visible: false });
-    console.log('cancel',e);
   }
 
   render(){
@@ -158,7 +158,7 @@ export default class AddFavourite extends React.Component{
           onCancel={this.onFormCancel}
           footer={null}
         >
-          <AddFavouriteForm />
+          <AddFavouriteForm closeModal={this.onFormCancel}/>
         </Modal>
       </div>
     )

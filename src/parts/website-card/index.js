@@ -31,6 +31,10 @@ export default class WebsiteCard extends React.Component {
     }
   };
 
+  componentWillMount(){
+    // fetch data and process
+  }
+
 
   render(){
     let hasUrl = this.state.url.length? true : false;
