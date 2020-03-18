@@ -3,7 +3,7 @@ import './style.css';
 
 import { Modal, Button, Form, Input, Tag, Row, Col } from 'antd';
 
-import {saveData} from './data-handling';
+import {saveData} from '../../data-service/data-handling';
 
 function TagField({rules,layout,outputTags}){
 

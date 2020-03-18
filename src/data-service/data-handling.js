@@ -11,3 +11,15 @@ export const saveData = (name,fields) => {
   }
   return db_ins.save();
 }
+
+export const fetchAllRecords = (name) => {
+  let q = new AV.Query(name);
+  return q.find();
+}
+
+export const handleDataResults = (resultArr) => {
+  return resultArr.map((r)=>{
+    let id = r.id;
+    return {...r.attributes,id}
+  })
+}

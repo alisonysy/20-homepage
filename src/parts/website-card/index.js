@@ -31,13 +31,18 @@ export default class WebsiteCard extends React.Component {
     }
   };
 
-  componentWillMount(){
+  componentWillReceiveProps(props){
     // fetch data and process
+    console.log('----card',props);
+    const r = props.data;
+    this.setState({...this.state,...r});
+
   }
 
 
   render(){
     let hasUrl = this.state.url.length? true : false;
+    console.log(this.state)
     return (
       <Card 
         hoverable
