@@ -15,7 +15,7 @@ export default function WebsiteShortcut(){
 
   return (
     records.map((r)=>{
-      return <WebsiteCard data={r} />
+      return <WebsiteCard data={r} key={r.id} />
     })
   )
 }
