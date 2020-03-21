@@ -8,10 +8,6 @@ import {generateRandomColor} from '../../utils/color';
 
 function TagField({rules,layout,outputTags}){
 
-  const addTags = (e) => {
-    console.log('----add tags submit',e);
-  };
-
   const onTagInputChange = (e) => {
     if(e.target.value.indexOf(',') !== -1){
       let tag = e.target.value.slice(0,-1);
@@ -25,18 +21,29 @@ function TagField({rules,layout,outputTags}){
           <Form.Item name="tags" rules={rules} className="addFavouriteForm--tags_input">
             <Input onChange={onTagInputChange} placeholder="A tag will be generated once there is ','." />
           </Form.Item>
-          <Button type="primary" htmlType="button" shape="round" onClick={addTags} style={{marginLeft:'.5em'}}>
-            +
-          </Button>
         </Input.Group>
       </Form.Item>
+  )
+}
+
+function WrappedTag(props){
+  let {name,changeTagColor,closingTag} = props;
+  let [instanceColor,setInstanceColor] = useState(null);
+
+  const changeColor = () => {
+    let c =generateRandomColor();
+    setInstanceColor(c);
+    changeTagColor(name,c);
+  }
+
+  return (
+    <Tag  onClick={changeColor} color={instanceColor} closable={true} onClose={closingTag}>{name}</Tag>
   )
 }
 
 /* domain, url, title, category, tags[], key(keyborad), icon-url */ 
 function AddFavouriteForm(props){
   const [form] = Form.useForm();
-  let [tagsArr,setTagsArr] = useState([]);
   let [loading,setLoading] = useState(false);
 
   let validation = (isRequired,msg) => {
@@ -60,27 +67,46 @@ function AddFavouriteForm(props){
       .finally(()=> setLoading(false));
   };
 
+  // tags:[{name:'',color:''},...]
+  let [tagsArr,setTagsArr] = useState([]);
   const outputTags = (tag) => {
-    console.log(tag);
+    if(tag.trim().length===0){
+      form.setFieldsValue({tags:''});
+      return;
+    }
+    for(let n=0;n<tagsArr.length;n++){
+      if(tagsArr[n].name === tag){
+        form.setFieldsValue({tags:''});
+        return;
+      }
+    }
     // #notes: cannot use tagsArr.push(tag) because Array.prototype.push() returns the number of the modified array
     setTagsArr((prev) =>{ 
-      return [...prev,tag]
+      let n = {name:tag,color:null};
+      return prev.length? [...prev,n] : [n];
     });
     form.setFieldsValue({tags:''});
   }
 
-  let [tagColor,setTagColor] = useState(undefined);
-  const changeTagColor = (e) => {
-    e.persist();
-    setTagColor(generateRandomColor());
+  const changeTagColor = (tagName,newColor) => {
+    for(let t=0;t<tagsArr.length;t++){
+      if(tagsArr[t].name===tagName){
+        tagsArr[t].color = newColor;
+      }
+    }
+    console.log(tagsArr);
   }
   const closingTag = (t) => {
     t.persist();
     let tagToRemove = t.target.parentElement.parentElement.textContent;
-    setTagsArr((prev)=>{
-      let ts = prev.splice(prev.indexOf(tagToRemove),1);
-      return [...prev]
-    });
+    for(let t=0;t<tagsArr.length;t++){
+      console.log(tagsArr[t],tagToRemove);
+      if(tagsArr[t].name===tagToRemove){
+        let copiedTagsArr = tagsArr;
+        copiedTagsArr.splice(t,1);
+        console.log(tagsArr);
+      }
+    }
   };
 
   const formItemLayout = {
@@ -124,8 +150,9 @@ function AddFavouriteForm(props){
       {tagsArr.length>0? (<Row className="addFavouriteForm--tagsBoard">
         <Col span={formItemLayout.labelCol.span}></Col>
         {tagsArr.map((t)=>{
+          console.log('---rendered',t)
           return (
-            <Tag key={ "tag-"+ t} onClick={changeTagColor} color={tagColor} closable={true} onClose={closingTag}>{t}</Tag>
+            <WrappedTag key={ "tag-"+ t.name} name={t.name} changeTagColor={changeTagColor} closingTag={closingTag} />
           );
         })}
       </Row>) : null}

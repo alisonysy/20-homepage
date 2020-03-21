@@ -61,7 +61,7 @@ export default class WebsiteCard extends React.Component {
 
   render(){
     let hasUrl = this.state.url.length? true : false;
-    let {domain,url,icon,key} = this.state;
+    let {domain,url,icon,key,tags} = this.state;
     console.log(this.state,url)
     return (
       <Card 
@@ -75,7 +75,11 @@ export default class WebsiteCard extends React.Component {
               <Favicon url={domain.length>0? domain : url} icon={icon} style={{marginBottom:'0.5em'}} /> 
               <Typography.Title level={3} style={inlineStyle.font}>{this.state.title}</Typography.Title>
               <div>
-                <Tag color="#ddd" />
+                {tags.length? 
+                  tags.map((t)=>{
+                    return <Tag color={t.color? t.color: '#ddd'}>{t.name}</Tag>
+                  }):null
+                }
                 <Typography.Title level={4} style={{...inlineStyle.font,display:'inline-block',verticalAlign:'middle'}}>{this.state.category}</Typography.Title>
               </div>
             </div>
