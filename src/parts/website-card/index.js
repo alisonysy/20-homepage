@@ -61,7 +61,7 @@ export default class WebsiteCard extends React.Component {
 
   render(){
     let hasUrl = this.state.url.length? true : false;
-    let {domain,url,icon} = this.state;
+    let {domain,url,icon,key} = this.state;
     console.log(this.state,url)
     return (
       <Card 
@@ -69,10 +69,11 @@ export default class WebsiteCard extends React.Component {
         className="websiteCard"
       >
         <div className="websiteCard-body">
+        { key && key.length? <div className="websiteCard-body_inner_key">&lt;{key}&gt;</div> : null}
           <a  href={hasUrl? url : 'javascript:void(0);'} target={hasUrl ? "_blank" : ""}>
             <div className="websiteCard-body_inner abso_center">
               <Favicon url={domain.length>0? domain : url} icon={icon} style={{marginBottom:'0.5em'}} /> 
-              <Typography.Title level={2} style={inlineStyle.font}>{this.state.title}</Typography.Title>
+              <Typography.Title level={3} style={inlineStyle.font}>{this.state.title}</Typography.Title>
               <div>
                 <Tag color="#ddd" />
                 <Typography.Title level={4} style={{...inlineStyle.font,display:'inline-block',verticalAlign:'middle'}}>{this.state.category}</Typography.Title>

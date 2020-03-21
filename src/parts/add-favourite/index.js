@@ -4,6 +4,7 @@ import './style.css';
 import { Modal, Button, Form, Input, Tag, Row, Col } from 'antd';
 
 import {saveData} from '../../data-service/data-handling';
+import {generateRandomColor} from '../../utils/color';
 
 function TagField({rules,layout,outputTags}){
 
@@ -68,6 +69,20 @@ function AddFavouriteForm(props){
     form.setFieldsValue({tags:''});
   }
 
+  let [tagColor,setTagColor] = useState(undefined);
+  const changeTagColor = (e) => {
+    e.persist();
+    setTagColor(generateRandomColor());
+  }
+  const closingTag = (t) => {
+    t.persist();
+    let tagToRemove = t.target.parentElement.parentElement.textContent;
+    setTagsArr((prev)=>{
+      let ts = prev.splice(prev.indexOf(tagToRemove),1);
+      return [...prev]
+    });
+  };
+
   const formItemLayout = {
     labelCol:{span:4},
     wrapperCol:{span:18}
@@ -110,7 +125,7 @@ function AddFavouriteForm(props){
         <Col span={formItemLayout.labelCol.span}></Col>
         {tagsArr.map((t)=>{
           return (
-            <Tag key={ "tag-"+ t}>{t}</Tag>
+            <Tag key={ "tag-"+ t} onClick={changeTagColor} color={tagColor} closable={true} onClose={closingTag}>{t}</Tag>
           );
         })}
       </Row>) : null}
