@@ -23,3 +23,14 @@ export const handleDataResults = (resultArr) => {
     return {...r.attributes,id}
   })
 }
+
+export const _uploadImg = (elId) => {
+  let inp = document.getElementById(elId);
+  inp.addEventListener('input',function(f){
+    if(f.target.files.length){
+      let localFile = f.target.files[0];
+      let file = new AV.File('ico-placeholder.png',localFile);
+      file.save().then((f)=>{console.log('success',f.id)}).catch((e)=>{console.log('save failure',e)})
+    }
+  })
+}
