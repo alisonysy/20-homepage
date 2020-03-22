@@ -10,9 +10,9 @@ import AddFavourite from './parts/add-favourite';
 function App() {
   return (
     <div className="App">
-      <WebsiteShortcut />
+      {/* <WebsiteShortcut /> */}
       {/* <WebsiteCard /> */}
-      {/* <AddFavourite /> */}
+      <AddFavourite />
     </div>
   );
 }

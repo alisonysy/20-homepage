@@ -1,9 +1,9 @@
 import React, {useRef,useEffect, useState} from 'react';
 import './style.css';
 
-import { Modal, Button, Form, Input, Tag, Row, Col } from 'antd';
+import { Modal, Button, Form, Input, Tag, Row, Col, Popover, Radio } from 'antd';
 
-import {saveData,saveAll} from '../../data-service/data-handling';
+import {saveData,saveAll,fetchAllRecords,handleDataResults} from '../../data-service/data-handling';
 import {generateRandomColor} from '../../utils/color';
 
 function TagField({rules,layout,outputTags}){
@@ -27,17 +27,60 @@ function TagField({rules,layout,outputTags}){
 }
 
 function WrappedTag(props){
-  let {name,changeTagColor,closingTag} = props;
+  let {name,changeTagColor,closingTag,tagsRecord} = props;
   let [instanceColor,setInstanceColor] = useState(null);
+  let [colorPopupVisible,setColorPopupVisible] = useState(false);
+  let [toChangeTagColor,setToChangeTagColor] = useState(false);
 
   const changeColor = () => {
-    let c =generateRandomColor();
-    setInstanceColor(c);
-    changeTagColor(name,c);
+    for(let t=0;t<tagsRecord.length;t++){
+      console.log(tagsRecord[t],name)
+      if(tagsRecord[t].name===name){
+        console.log('----tag alread in db');
+        setColorPopupVisible(true);
+      }
+    }
+    if(!colorPopupVisible || toChangeTagColor){
+      let c =generateRandomColor();
+      setInstanceColor(c);
+      changeTagColor(name,c);
+    }
+  }
+
+  const isTagColorChanged = (b) => {
+    setToChangeTagColor(b);
   }
 
   return (
-    <Tag  onClick={changeColor} color={instanceColor} closable={true} onClose={closingTag}>{name}</Tag>
+    <Popover content={<ChangeTagColorPopup isTagColorChanged={isTagColorChanged}/>} trigger="click" visible={colorPopupVisible}>
+      <Tag  onClick={changeColor} color={instanceColor} closable={true} onClose={closingTag}>{name}</Tag>
+    </Popover>
+  )
+}
+
+function ChangeTagColorPopup(props){
+  let [isToChange,setIsToChange] = useState(false);
+  const onSelectTagColorChange = (r) => {
+    if(r.target.value === '1'){
+      setIsToChange(true);
+    }
+  }
+
+  const submitTagColorChange = () => {
+    props.isTagColorChanged(isToChange);
+  }
+
+  return (
+    <Row>
+      This tag exists, do you want to change its color:
+      <Radio.Group defaultValue="0" onChange={onSelectTagColorChange} buttonStyle="solid">
+        <Radio.Button value="1">Yes</Radio.Button>
+        <Radio.Button value="0">No</Radio.Button>
+      </Radio.Group>
+      <Button htmlType="submit" type="primary" onClick={submitTagColorChange}>
+        OK
+      </Button>
+    </Row>
   )
 }
 
@@ -75,6 +118,14 @@ function AddFavouriteForm(props){
   };
 
   // tags:[{name:'',color:''},...]
+  let [tagsRecord,setTagsRecord]=useState([]);
+  useEffect(()=>{
+    fetchAllRecords('Tags').then((t)=>{
+      setTagsRecord(handleDataResults(t));
+      console.log('tags records',tagsRecord)
+    }).catch((e)=>console.log(e))
+  },[]);
+
   let [tagsArr,setTagsArr] = useState([]);
   const outputTags = (tag) => {
     if(tag.trim().length===0){
@@ -160,7 +211,7 @@ function AddFavouriteForm(props){
         {tagsArr.map((t)=>{
           console.log('---rendered',t)
           return (
-            <WrappedTag key={ "tag-"+ t.name} name={t.name} changeTagColor={changeTagColor} closingTag={closingTag} />
+            <WrappedTag key={ "tag-"+ t.name} name={t.name} changeTagColor={changeTagColor} closingTag={closingTag} tagsRecord={tagsRecord}/>
           );
         })}
       </Row>) : null}

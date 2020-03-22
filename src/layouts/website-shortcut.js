@@ -9,19 +9,25 @@ export default function WebsiteShortcut(){
   useEffect(()=>{
     fetchAllRecords('Favourites').then((res)=>{
       setRecords([...handleDataResults(res)]);
-      console.log(records);
     }).catch((e)=>console.log('fetch all records error',e));
   },[records.length])
 
   useEffect(()=>{
     fetchAllRecords('Tags').then((tags)=>{
       setAllTags([...handleDataResults(tags)]);
-      console.log(allTags);
     }).catch((e)=>console.log('fetch all tags error',e));
   },[allTags.length])
 
   return (
     records.map((r)=>{
+      let tags = r.tags, tagsRecord=[];
+      for(let t=0;t<allTags.length;t++){
+        for(let i=0;i<tags.length;i++){
+          if(allTags[t].name === tags[i].name){
+            tags[i].color = allTags[t].color;
+          }
+        }
+      };
       return <WebsiteCard data={r} key={r.id} />
     })
   )

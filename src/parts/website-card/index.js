@@ -20,7 +20,7 @@ function Favicon(props){
   },[props]);
 
   return (
-    <Avatar src={url} size={60} style={props.style} onError={handleNonExistingIcon}/> 
+    <Avatar src={url} size={50} style={props.style} onError={handleNonExistingIcon}/> 
   )
 }
 
