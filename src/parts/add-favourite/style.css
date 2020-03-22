@@ -5,3 +5,10 @@
 .addFavouriteForm--tagsBoard{
   margin-bottom:24px;
 }
+
+.changeTagColorPopup-closing{
+  position: absolute;
+  right:5px;
+  top:0;
+  cursor: pointer;
+}

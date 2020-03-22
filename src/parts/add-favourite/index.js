@@ -5,6 +5,7 @@ import { Modal, Button, Form, Input, Tag, Row, Col, Popover, Radio } from 'antd'
 
 import {saveData,saveAll,fetchAllRecords,handleDataResults} from '../../data-service/data-handling';
 import {generateRandomColor} from '../../utils/color';
+import { Relation } from 'leancloud-storage';
 
 function TagField({rules,layout,outputTags}){
 
@@ -31,16 +32,13 @@ function WrappedTag(props){
   let [instanceColor,setInstanceColor] = useState(null);
   let [colorPopupVisible,setColorPopupVisible] = useState(false);
   let [toChangeTagColor,setToChangeTagColor] = useState(false);
+  let [tagInDb,setTagInDb] = useState(null);
 
   const changeColor = () => {
-    for(let t=0;t<tagsRecord.length;t++){
-      console.log(tagsRecord[t],name)
-      if(tagsRecord[t].name===name){
-        console.log('----tag alread in db');
-        setColorPopupVisible(true);
-      }
+    if(tagInDb){
+      setColorPopupVisible(true);
     }
-    if(!colorPopupVisible || toChangeTagColor){
+    if((!colorPopupVisible && !tagInDb)){
       let c =generateRandomColor();
       setInstanceColor(c);
       changeTagColor(name,c);
@@ -49,10 +47,37 @@ function WrappedTag(props){
 
   const isTagColorChanged = (b) => {
     setToChangeTagColor(b);
+    if(!b){
+      setInstanceColor(tagInDb.color);
+      changeTagColor(name,tagInDb.color);
+    }
   }
 
+  const handleColorChangeFromPopup = (c) => {
+    setInstanceColor(c);
+    changeTagColor(name,c);
+  }
+
+  useEffect(()=>{
+    for(let t=0;t<tagsRecord.length;t++){
+      if(tagsRecord[t].name===name){
+        setTagInDb(tagsRecord[t]);
+        setInstanceColor(tagsRecord[t].color)
+      }
+    }
+  },[tagInDb])
+
   return (
-    <Popover content={<ChangeTagColorPopup isTagColorChanged={isTagColorChanged}/>} trigger="click" visible={colorPopupVisible}>
+    <Popover 
+      content={<ChangeTagColorPopup 
+        isTagColorChanged={isTagColorChanged} 
+        handleColorChangeFromPopup={handleColorChangeFromPopup}
+        setPopoverVisible={()=>setColorPopupVisible(false)}
+        />} 
+      trigger="click" 
+      visible={colorPopupVisible}
+      style={{position:'relative'}}
+    >
       <Tag  onClick={changeColor} color={instanceColor} closable={true} onClose={closingTag}>{name}</Tag>
     </Popover>
   )
@@ -61,25 +86,30 @@ function WrappedTag(props){
 function ChangeTagColorPopup(props){
   let [isToChange,setIsToChange] = useState(false);
   const onSelectTagColorChange = (r) => {
-    if(r.target.value === '1'){
-      setIsToChange(true);
-    }
+    let ch = r.target.value === '1'? true : false;
+    setIsToChange(ch);
+    props.isTagColorChanged(ch);
   }
 
   const submitTagColorChange = () => {
     props.isTagColorChanged(isToChange);
   }
 
+  let [color,setColor] = useState(null);
+  const getRandomColor = () => {
+    let c = generateRandomColor();
+    setColor(c);
+    props.handleColorChangeFromPopup(c);
+  }
+
   return (
     <Row>
       This tag exists, do you want to change its color:
       <Radio.Group defaultValue="0" onChange={onSelectTagColorChange} buttonStyle="solid">
-        <Radio.Button value="1">Yes</Radio.Button>
-        <Radio.Button value="0">No</Radio.Button>
+        <Radio.Button value="1" onClick={getRandomColor}>Give me some beautiful color</Radio.Button>
+        <Radio.Button value="0">Stay on the original</Radio.Button>
       </Radio.Group>
-      <Button htmlType="submit" type="primary" onClick={submitTagColorChange}>
-        OK
-      </Button>
+      <div className="changeTagColorPopup-closing" onClick={() => props.setPopoverVisible()}>x</div>
     </Row>
   )
 }
@@ -118,14 +148,6 @@ function AddFavouriteForm(props){
   };
 
   // tags:[{name:'',color:''},...]
-  let [tagsRecord,setTagsRecord]=useState([]);
-  useEffect(()=>{
-    fetchAllRecords('Tags').then((t)=>{
-      setTagsRecord(handleDataResults(t));
-      console.log('tags records',tagsRecord)
-    }).catch((e)=>console.log(e))
-  },[]);
-
   let [tagsArr,setTagsArr] = useState([]);
   const outputTags = (tag) => {
     if(tag.trim().length===0){
@@ -145,6 +167,14 @@ function AddFavouriteForm(props){
     });
     form.setFieldsValue({tags:''});
   }
+
+  let [tagsRecord,setTagsRecord]=useState([]);
+  useEffect(()=>{
+    fetchAllRecords('Tags').then((t)=>{
+      setTagsRecord(handleDataResults(t));
+      console.log('tags records',tagsRecord)
+    }).catch((e)=>console.log(e))
+  },[tagsArr]);
 
   const changeTagColor = (tagName,newColor) => {
     setTagsArr((prev)=>{
