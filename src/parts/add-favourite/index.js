@@ -3,7 +3,7 @@ import './style.css';
 
 import { Modal, Button, Form, Input, Tag, Row, Col } from 'antd';
 
-import {saveData} from '../../data-service/data-handling';
+import {saveData,saveAll} from '../../data-service/data-handling';
 import {generateRandomColor} from '../../utils/color';
 
 function TagField({rules,layout,outputTags}){
@@ -56,15 +56,22 @@ function AddFavouriteForm(props){
   const formSubmit = (values) => {
     setLoading(true);
     console.log('form submitted',values);
-    let fields=[];
+    let fields=[],tags=[]; //[[{name:'name',value:'tag1'},{name:'color',value:'hex1'}],[]]
     for(var key in values){
       fields.push({name:key,value: key === 'tags'? tagsArr : values[key]});
+      if(key==='tags'){ //[{name:'tag1',color:'hex1'},{}]
+        for(let t=0;t<tagsArr.length;t++){
+          tags.push([{name:'name',value:tagsArr[t].name},{name:'color',value:tagsArr[t].color}]);
+        }
+      }
     }
-    saveData('Favourites',fields).then((res)=>{
-      console.log(res);
-      props.closeModal();
-    }).catch((e)=>{console.log(e)})
-      .finally(()=> setLoading(false));
+    Promise.all([saveData('Favourites',fields),saveAll('Tags',tags)])
+      .then((res)=>{
+        console.log('saved!----',res);
+        props.closeModal();
+      }).catch((e)=>console.log(e))
+      .finally(()=>setLoading(false))
+
   };
 
   // tags:[{name:'',color:''},...]
@@ -89,12 +96,13 @@ function AddFavouriteForm(props){
   }
 
   const changeTagColor = (tagName,newColor) => {
-    for(let t=0;t<tagsArr.length;t++){
-      if(tagsArr[t].name===tagName){
-        tagsArr[t].color = newColor;
+    setTagsArr((prev)=>{
+      let temp = [];
+      for(let p=0;p<prev.length;p++){
+        temp.push(prev[p].name===tagName?{name:tagName,color:newColor}:prev[p]);
       }
-    }
-    console.log(tagsArr);
+      return temp;
+    });
   }
   const closingTag = (t) => {
     t.persist();
