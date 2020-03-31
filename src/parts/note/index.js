@@ -1,9 +1,11 @@
 import React from 'react';
 
-import {Card, Button, Rate, Input, Tag, Form, Row} from 'antd';
+import {Card, Button, Rate, Input, Tag, Form, Row, Typography, Select} from 'antd';
 import './style.css';
 
-
+const {TextArea} = Input;
+const {Title} = Typography;
+const {Option} = Select;
 // This should be in the note list, which is outside of this .js file
 function AddNote(){
   return (
@@ -26,12 +28,12 @@ export default class Note extends React.Component{
     this.onFormSubmit = this.onFormSubmit.bind(this);
     this.onTagClosed = this.onTagClosed.bind(this);
     this.onTagInpChange = this.onTagInpChange.bind(this);
+    this.onNotesChange = this.onNotesChange.bind(this);
   }
 
   
 
   handleUrgencyChange(e){
-    console.log('----rate changes',e);
     this.setState({...this.state,urgency:e});
   }
 
@@ -61,24 +63,25 @@ export default class Note extends React.Component{
     }
   }
 
-  onFormSubmit(){
+  onNotesChange(e){
+    e.persist();
+    this.setState({content:e.target.value});
+  }
 
+  onFormSubmit(e){
+    console.log('values are',e)
   }
 
   render(){
-    let {tags} = this.state;
+    let {tags,content,urgency} = this.state;
     return (
       <Card hoverable className="note" >
         <Form onFinish={this.onFormSubmit} >
           <Form.Item name="urgency" >
-            <Rate character="!" style={{fontSize:20,fontWeight:800,color:'#629bec'}} />
-            {/* onChange={this.handleUrgencyChange} value={this.state.urgency} */}
+            <Rate character="!" style={{fontSize:20,fontWeight:800,color:'#629bec'}} value={urgency}/>
           </Form.Item>
-          {/* <Form.Item name="tags" label="Tags" normalize={this.handleTagInput}>
-            <Input onChange={this.onTagInpChange} placeholder="A tag will be generated once there is ','." allowClear={true}/>
-          </Form.Item> */}
           <Row>
-            <label for="tags">Tags:</label>
+            <label htmlFor="tags">Tags:</label>
             <input onChange={this.onTagInpChange} value={this.state.tagInput} id="tags"/>
           </Row>
           {tags.length>0? 
@@ -87,6 +90,29 @@ export default class Note extends React.Component{
               return <Tag closable={true} onClose={this.onTagClosed} color='#ea45b8' key={k}>{t}</Tag>;
             })
           : null}
+          <Form.Item name="notes" label="Notes">
+            <TextArea allowClear value={content} onChange={this.onNotesChange} autoSize={{minRows:8,maxRows:8}} style={{resize:'none'}}/> 
+          </Form.Item>
+          <Form.Item>
+            <div>To-do:</div>
+            <Input.Group compact>
+              <Form.Item name={['todo','state']} style={{width:'40%'}}>
+                <Select defaultValue="todo">
+                  <Option value="todo">To do</Option>
+                  <Option value="ing">Doing</Option>
+                  <Option value="completed">Completed</Option>
+                </Select>
+              </Form.Item>
+              <Form.Item name={['todo','event']} style={{width:'60%'}}>
+                <Input />
+              </Form.Item>
+            </Input.Group>
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              Add
+            </Button>
+          </Form.Item>
         </Form>
       </Card>
     )
