@@ -89,3 +89,8 @@ this.setState((prevArr)=>{
 2. 笔记日期时间
 3. 标签 - 与网页的标签无关
 4. 紧急情况
+
+
+## Notes
+### About Ant Design
+类组件的表单实例直接通过`this.props.form`取得，而函数组件的表单实例通过`const {form} = Form`和`<Form form={form}></Form>`获得。

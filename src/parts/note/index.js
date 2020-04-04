@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 import {Card, Button, Rate, Input, Tag, Form, Row, Typography, Select} from 'antd';
+import {DeleteFilled, PlusCircleOutlined,MinusCircleOutlined} from '@ant-design/icons';
 import './style.css';
 
 const {TextArea} = Input;
@@ -13,7 +14,44 @@ function AddNote(){
   )
 }
 
-export default class Note extends React.Component{
+function DynamicTodo(){
+  return (
+    <div>
+      <Form.List name="todos">
+        {(fields,{add, remove})=>{
+          return (
+            <div>
+              {fields.map((f,idx)=>(
+                <Form.Item 
+                  label={idx===0? 'Add a to-do':''}
+                  required={false}
+                  key={f.key}
+                >
+                  <Form.Item
+                    noStyle
+                    {...f}
+                    validateTrigger={['onBlur']}
+                    rules={[{required:true,whitespace:true,message:'Please add a to-do or delete this field.'}]}
+                  >
+                    <Input placeholder="To do ..." />
+                  </Form.Item>
+                  {fields.length>1? (<MinusCircleOutlined onClick={()=> remove(f.name)} />) : null}
+                </Form.Item>
+              ))}
+              <Form.Item>
+                <Button type="dashed" onClick={()=> {add();}}>
+                  <PlusCircleOutlined />Add a To-do
+                </Button>
+              </Form.Item>
+            </div>
+          )
+        }}
+      </Form.List>
+    </div>
+  )
+}
+
+class Note extends React.Component{
   constructor(props){
     super(props);
     this.state = {
@@ -29,6 +67,7 @@ export default class Note extends React.Component{
     this.onTagClosed = this.onTagClosed.bind(this);
     this.onTagInpChange = this.onTagInpChange.bind(this);
     this.onNotesChange = this.onNotesChange.bind(this);
+    this.handleAddedTodo = this.handleAddedTodo.bind(this);
   }
 
   
@@ -68,12 +107,23 @@ export default class Note extends React.Component{
     this.setState({content:e.target.value});
   }
 
+  handleAddedTodo(e){
+    this.setState((prev)=>{
+      let prevTodos = prev.todos;
+      if(prevTodos.indexOf(e) === -1){
+        return {...prev,todos:[...prevTodos,e]}
+      };
+    },function(){console.log('new todos',this.state.todos)})
+  }
+
   onFormSubmit(e){
     console.log('values are',e)
   }
 
+
   render(){
     let {tags,content,urgency} = this.state;
+    
     return (
       <Card hoverable className="note" >
         <Form onFinish={this.onFormSubmit} >
@@ -93,11 +143,11 @@ export default class Note extends React.Component{
           <Form.Item name="notes" label="Notes">
             <TextArea allowClear value={content} onChange={this.onNotesChange} autoSize={{minRows:8,maxRows:8}} style={{resize:'none'}}/> 
           </Form.Item>
-          <Form.Item>
+          {/* <Form.Item>
             <div>To-do:</div>
             <Input.Group compact>
               <Form.Item name={['todo','state']} style={{width:'40%'}}>
-                <Select defaultValue="todo">
+                <Select defaultValue="Select">
                   <Option value="todo">To do</Option>
                   <Option value="ing">Doing</Option>
                   <Option value="completed">Completed</Option>
@@ -107,7 +157,8 @@ export default class Note extends React.Component{
                 <Input />
               </Form.Item>
             </Input.Group>
-          </Form.Item>
+          </Form.Item> */}
+          <DynamicTodo handleAddedTodo={this.handleAddedTodo}/>
           <Form.Item>
             <Button type="primary" htmlType="submit">
               Add
@@ -118,3 +169,5 @@ export default class Note extends React.Component{
     )
   }
 }
+
+export default Note;
