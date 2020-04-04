@@ -4,6 +4,7 @@ import {Card, Button, Rate, Input, Tag, Form, Row, Typography, Select} from 'ant
 import {DeleteFilled, PlusCircleOutlined,MinusCircleOutlined,ClockCircleOutlined,CheckCircleOutlined} from '@ant-design/icons';
 import './style.css';
 import {wrapToStart} from '../../utils/strings';
+import {saveData,handleDataResults} from '../../data-service/data-handling';
 
 const {TextArea} = Input;
 const {Title} = Typography;
@@ -136,9 +137,9 @@ class Note extends React.Component{
   onTagClosed(t){
     t.persist();
     let tagToRemove = t.target.parentElement.parentElement.textContent;
-    for(let t=0;t<this.tags.length;t++){
-      if(this.tags[t].name===tagToRemove){
-        let copiedTagsArr = [...this.tags];
+    for(let t=0;t<this.state.tags.length;t++){
+      if(this.state.tags[t].name===tagToRemove){
+        let copiedTagsArr = [...this.state.tags];
         copiedTagsArr.splice(t,1);
         this.setState({tags:copiedTagsArr});
       }
@@ -175,13 +176,23 @@ class Note extends React.Component{
   }
 
   onFormSubmit(e){
-    console.log('values are',e);
     // combine todoState array
+    let fields = [];
     let todosState = [...this.state.todos];
     todosState = todosState.map((t,tId)=>{
       return {...t,note:e.todos[tId]}
     });
-    console.log(todosState);
+    for(var key in e){
+      fields.push({name:key,value:key === 'todos'? todosState : e[key]})
+    }
+    fields.push({name:'tags',value:this.state.tags});
+    console.log(fields);
+    saveData('Notes',fields)
+      .then((res)=>{
+        let n = handleDataResults([res],['createdAt','updatedAt']);
+        console.log(n)
+      })
+      .catch( e => console.log('save notes failed',e));
   }
 
 

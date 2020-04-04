@@ -33,10 +33,20 @@ export const fetchAllRecords = (name) => {
 }
 
 
-export const handleDataResults = (resultArr) => {
+export const handleDataResults = (resultArr,addedFields) => {
   return resultArr.map((r)=>{
-    let id = r.id;
-    return {...r.attributes,id}
+    let id = r.id, re={...r.attributes,id};
+    addedFields = addedFields.map((f)=> {
+      let o = {};
+      o[f] = r[f];
+      return o;
+    });
+    if(addedFields.length){
+      addedFields.map((f)=>{
+        re = {...re,...f}
+      });
+    }
+    return re;
   })
 }
 
