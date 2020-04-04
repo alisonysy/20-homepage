@@ -39,15 +39,15 @@ function TodoState(props){
   }
 
   return (
-    <div onClick={onChangeState}>
+    <div onClick={onChangeState} style={{display:'inline-block',verticalAlign:'middle'}}>
       {
         todoState === todo?
-          <div className="todoState_todo" style={style_icon}></div>
+          <div className="todoState_todo theme-comfort-icon-border" style={style_icon}></div>
           :
           todoState === doing?
-            <ClockCircleOutlined style={style_icon}/>
+            <ClockCircleOutlined style={style_icon} className="theme-comfort-icon"/>
             :
-            <CheckCircleOutlined style={style_icon}/>
+            <CheckCircleOutlined style={style_icon} className="theme-comfort-icon"/>
       }
     </div>
   )
@@ -57,6 +57,10 @@ function DynamicTodo(props){
   const _handleTodoState = (id,state) => {
     props.handleTodoState({id,state})
   }
+  const style_icon = {
+    fontSize:20,
+    verticalAlign:'middle'
+  }
   return (
     <div>
       <Form.List name="todos">
@@ -65,7 +69,7 @@ function DynamicTodo(props){
             <div>
               {fields.map((f,idx)=>(
                 <Form.Item 
-                  label={idx===0? 'Add a to-do':''}
+                  //label={idx===0? 'Add a to-do':''}
                   required={false}
                   key={f.key}
                 >
@@ -76,14 +80,14 @@ function DynamicTodo(props){
                     validateTrigger={['onBlur']}
                     rules={[{required:true,whitespace:true,message:'Please add a to-do or delete this field.'}]}
                   >
-                    <Input placeholder="To do ..." />
+                    <Input placeholder="To do ..."  style={{display:'inline-block',width:'75%'}} className="note_todoItemInp"/>
                   </Form.Item>
-                  {fields.length>0? (<MinusCircleOutlined onClick={()=> remove(f.name)} />) : null}
+                  {fields.length>0? (<MinusCircleOutlined onClick={()=> remove(f.name)} style={style_icon} className="theme-comfort-icon-secondary"/>) : null}
                 </Form.Item>
               ))}
               <Form.Item>
-                <Button type="dashed" onClick={()=> {add();}}>
-                  <PlusCircleOutlined />Add a To-do
+                <Button type="dashed" onClick={()=> {add();}} className="note_todo-addBtn theme-comfort-icon-hovered">
+                  <PlusCircleOutlined className="note_todo-addBtn-icon theme-comfort-icon" style={style_icon}/>Add a To-do
                 </Button>
               </Form.Item>
             </div>
@@ -200,27 +204,27 @@ class Note extends React.Component{
     let {tags,content,urgency} = this.state;
     
     return (
-      <Card hoverable className="note" >
+      <Card hoverable className="note theme-comfort-boxShadow theme-comfort-icon-border" >
         <Form onFinish={this.onFormSubmit} >
           <Form.Item name="urgency" >
-            <Rate character="!" style={{fontSize:20,fontWeight:800,color:'#629bec'}} value={urgency}/>
+            <Rate character="!" style={{fontSize:20,fontWeight:800}} value={urgency} className="theme-comfort-icon"/>
           </Form.Item>
-          <Row>
-            <label htmlFor="tags">Tags:</label>
-            <input onChange={this.onTagInpChange} value={this.state.tagInput} id="tags"/>
+          <Row style={{marginBottom:'1em'}}>
+            <label htmlFor="tags" className="theme-comfort-label_underline" style={{marginRight:'1em'}}>Tags</label>
+            <input onChange={this.onTagInpChange} value={this.state.tagInput} id="tags" className="note_tagsInp"/>
           </Row>
           {tags.length>0? 
             tags.map((t)=>{
               let k = 'notes-'+t;
-              return <Tag closable={true} onClose={this.onTagClosed} color='#ea45b8' key={k}>{t}</Tag>;
+              return <Tag closable={true} onClose={this.onTagClosed} className="note_tagItem theme-comfort-noteTag" key={k}>{t}</Tag>;
             })
           : null}
-          <Form.Item name="notes" label="Notes">
-            <TextArea allowClear value={content} onChange={this.onNotesChange} autoSize={{minRows:8,maxRows:8}} style={{resize:'none'}}/> 
+          <Form.Item name="notes" rules={[{required:true,message:'Please note down something...'}]}>
+            <TextArea  value={content} onChange={this.onNotesChange} autoSize={{minRows:6,maxRows:8}} style={{resize:'none'}} className="note_contentInp"/> 
           </Form.Item>
           <DynamicTodo handleAddedTodo={this.handleAddedTodo} handleTodoState={this.handleTodoState}/>
           <Form.Item>
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="submit" className="theme-comfort-button">
               Add
             </Button>
           </Form.Item>
