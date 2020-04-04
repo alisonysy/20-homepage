@@ -1,3 +1,10 @@
 .note{
   width:250px;
 }
+
+.todoState_todo{
+  width:20px;
+  height: 20px;
+  border-radius: 50%;
+  border:1px solid #ddd;
+}

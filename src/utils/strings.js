@@ -5,3 +5,7 @@ export const appendHttp = (url,notSecure) => {
   };
   return url;
 }
+
+export const wrapToStart = (max,idx) => {
+  return idx%max;
+}

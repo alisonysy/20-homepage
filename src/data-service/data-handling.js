@@ -1,6 +1,6 @@
 const AV = require('leancloud-storage');
 
-export const saveData = (name,fields) => {
+export const saveData = (name,fields) => { // save only one record at a time
   let Db = AV.Object.extend(name);
   let db_ins = new Db();
   if(Object.prototype.toString.call(fields) !== '[object Array]'){
@@ -13,7 +13,7 @@ export const saveData = (name,fields) => {
   return db_ins.save();
 }
 
-export const saveAll = (name,fieldsArr) => {
+export const saveAll = (name,fieldsArr) => {// save multiple records at a time
   let allObjToSave = [];
   let Db = AV.Object.extend(name);
   if(!fieldsArr.length) return;

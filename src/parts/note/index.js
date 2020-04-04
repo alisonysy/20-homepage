@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 
 import {Card, Button, Rate, Input, Tag, Form, Row, Typography, Select} from 'antd';
-import {DeleteFilled, PlusCircleOutlined,MinusCircleOutlined} from '@ant-design/icons';
+import {DeleteFilled, PlusCircleOutlined,MinusCircleOutlined,ClockCircleOutlined,CheckCircleOutlined} from '@ant-design/icons';
 import './style.css';
+import {wrapToStart} from '../../utils/strings';
 
 const {TextArea} = Input;
 const {Title} = Typography;
@@ -14,7 +15,47 @@ function AddNote(){
   )
 }
 
-function DynamicTodo(){
+function TodoState(props){
+  const todo = 'todo', doing = 'doing', done = 'done';
+  const stateArr = [todo,doing,done];
+  let [todoState,setTodoState] = useState(todo);
+
+  const style_icon = {
+    fontSize:20,
+    marginRight:6
+  }
+
+  useEffect(()=>{
+    props.handleTodoState(props.todoId,todoState);
+  },[]);
+
+  const onChangeState = (e) => {
+    e.persist();
+    let idx = stateArr.indexOf(todoState);
+    let nextState = stateArr[wrapToStart(stateArr.length,++idx)];
+    setTodoState(nextState);
+    props.handleTodoState(props.todoId,nextState);
+  }
+
+  return (
+    <div onClick={onChangeState}>
+      {
+        todoState === todo?
+          <div className="todoState_todo" style={style_icon}></div>
+          :
+          todoState === doing?
+            <ClockCircleOutlined style={style_icon}/>
+            :
+            <CheckCircleOutlined style={style_icon}/>
+      }
+    </div>
+  )
+}
+
+function DynamicTodo(props){
+  const _handleTodoState = (id,state) => {
+    props.handleTodoState({id,state})
+  }
   return (
     <div>
       <Form.List name="todos">
@@ -27,6 +68,7 @@ function DynamicTodo(){
                   required={false}
                   key={f.key}
                 >
+                  <TodoState handleTodoState={_handleTodoState} todoId={f.key}/>
                   <Form.Item
                     noStyle
                     {...f}
@@ -35,7 +77,7 @@ function DynamicTodo(){
                   >
                     <Input placeholder="To do ..." />
                   </Form.Item>
-                  {fields.length>1? (<MinusCircleOutlined onClick={()=> remove(f.name)} />) : null}
+                  {fields.length>0? (<MinusCircleOutlined onClick={()=> remove(f.name)} />) : null}
                 </Form.Item>
               ))}
               <Form.Item>
@@ -68,6 +110,7 @@ class Note extends React.Component{
     this.onTagInpChange = this.onTagInpChange.bind(this);
     this.onNotesChange = this.onNotesChange.bind(this);
     this.handleAddedTodo = this.handleAddedTodo.bind(this);
+    this.handleTodoState = this.handleTodoState.bind(this);
   }
 
   
@@ -107,6 +150,21 @@ class Note extends React.Component{
     this.setState({content:e.target.value});
   }
 
+  handleTodoState(e){
+    this.setState((prevState)=>{
+      let prevTodos = prevState.todos, isNew=true;
+      prevTodos.map((t,pId)=>{
+        isNew = pId !== e.id;
+      });
+      if(isNew){
+        prevTodos.push({...e,note:''})
+        return {...prevState,todos:prevTodos}
+      };
+      prevTodos[e.id] = {...prevTodos[e.id],...e};
+      return {...prevState,todos:[...prevTodos]}
+    });
+  }
+
   handleAddedTodo(e){
     this.setState((prev)=>{
       let prevTodos = prev.todos;
@@ -117,7 +175,13 @@ class Note extends React.Component{
   }
 
   onFormSubmit(e){
-    console.log('values are',e)
+    console.log('values are',e);
+    // combine todoState array
+    let todosState = [...this.state.todos];
+    todosState = todosState.map((t,tId)=>{
+      return {...t,note:e.todos[tId]}
+    });
+    console.log(todosState);
   }
 
 
@@ -143,22 +207,7 @@ class Note extends React.Component{
           <Form.Item name="notes" label="Notes">
             <TextArea allowClear value={content} onChange={this.onNotesChange} autoSize={{minRows:8,maxRows:8}} style={{resize:'none'}}/> 
           </Form.Item>
-          {/* <Form.Item>
-            <div>To-do:</div>
-            <Input.Group compact>
-              <Form.Item name={['todo','state']} style={{width:'40%'}}>
-                <Select defaultValue="Select">
-                  <Option value="todo">To do</Option>
-                  <Option value="ing">Doing</Option>
-                  <Option value="completed">Completed</Option>
-                </Select>
-              </Form.Item>
-              <Form.Item name={['todo','event']} style={{width:'60%'}}>
-                <Input />
-              </Form.Item>
-            </Input.Group>
-          </Form.Item> */}
-          <DynamicTodo handleAddedTodo={this.handleAddedTodo}/>
+          <DynamicTodo handleAddedTodo={this.handleAddedTodo} handleTodoState={this.handleTodoState}/>
           <Form.Item>
             <Button type="primary" htmlType="submit">
               Add
