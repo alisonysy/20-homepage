@@ -27,6 +27,7 @@ function TodoState(props){
   }
 
   useEffect(()=>{
+    if(props.state)setTodoState(props.state);
     props.handleTodoState(props.todoId,todoState);
   },[]);
 
@@ -54,7 +55,6 @@ function TodoState(props){
 }
 
 function DynamicTodo(props){
-  console.log('----dynamic',props)
   const _handleTodoState = (id,state) => {
     props.handleTodoState({id,state})
   }
@@ -63,17 +63,18 @@ function DynamicTodo(props){
     verticalAlign:'middle'
   }
   let [oldTodos,setOldTodos] = useState(props.recordTodos);
+  console.log('---dynmaci record todos',props.recordTodos,oldTodos)
   return (
     <div>
       <Form.List name={props.recordId? props.recordId + "-todos" :"todos"}>
-        {(fields,{add, remove})=>{
-          if(oldTodos && oldTodos.length){
-            console.log('-------------')
-            oldTodos.map((o)=>{
-              fields.push(o);
-            })
-          }
-          console.log(fields)
+        {(fields,{add, remove})=>{//{name: 0, key: 0, fieldKey: 0} {id,state,note}
+          // if(oldTodos && oldTodos.length){
+          //   if(fields.length !== oldTodos.length){
+          //     for(let n=0;n<oldTodos.length;n++){
+          //       fields.push({name:n,key:n,fieldKey:n})
+          //     }
+          //   }
+          // }
           return (
             <div>
               {fields.map((f,idx)=>(
@@ -82,14 +83,14 @@ function DynamicTodo(props){
                   required={false}
                   key={f.key}
                 >
-                  <TodoState handleTodoState={_handleTodoState} todoId={f.key}/>
+                  <TodoState handleTodoState={_handleTodoState} todoId={f.key} state={oldTodos[f.key]? oldTodos[f.key].state : null}/>
                   <Form.Item
                     noStyle
                     {...f}
                     validateTrigger={['onBlur']}
                     rules={[{required:true,whitespace:true,message:'Please add a to-do or delete this field.'}]}
                   >
-                    <Input placeholder="To do ..."  style={{display:'inline-block',width:'75%'}} className="note_todoItemInp"/>
+                    <Input placeholder="To do ..."  style={{display:'inline-block',width:'75%'}} className="note_todoItemInp" />
                   </Form.Item>
                   {fields.length>0? (<MinusCircleOutlined onClick={()=> remove(f.name)} style={style_icon} className="theme-comfort-icon-secondary"/>) : null}
                 </Form.Item>
@@ -121,6 +122,7 @@ class Note extends React.Component{
       urgency:r? r.urgency : 0,
       tagInput:''
     }
+    this.form = React.createRef();
     this.handleUrgencyChange = this.handleUrgencyChange.bind(this);
     this.onFormSubmit = this.onFormSubmit.bind(this);
     this.onTagClosed = this.onTagClosed.bind(this);
@@ -128,6 +130,7 @@ class Note extends React.Component{
     this.onNotesChange = this.onNotesChange.bind(this);
     this.handleAddedTodo = this.handleAddedTodo.bind(this);
     this.handleTodoState = this.handleTodoState.bind(this);
+    this.renderRecordTodosToNote = this.renderRecordTodosToNote.bind(this);
   }
 
   
@@ -231,18 +234,31 @@ class Note extends React.Component{
       .catch( e => console.log('save notes failed',e));
   }
 
-  handleUpdatingNote(id){
-
+  componentDidMount(){
+    // 
+    if(this.state.id){
+      this.renderRecordTodosToNote();
+    }
   }
 
+  renderRecordTodosToNote(){
+    const f = this.form.current;
+    let k = this.state.id + '-todos', o ={};
+    o[k] = this.state.todos.map((t)=>{
+      return t.note;
+    });
+    f.setFieldsValue({
+      ...o
+    })
+  }
 
   render(){
     const {id} = this.state;
     let {tags,content,urgency,todos} = this.state;
-    
+
     return (
       <Card hoverable className="note theme-comfort-boxShadow theme-comfort-noteCard-border" >
-        <Form onFinish={this.onFormSubmit} >
+        <Form onFinish={this.onFormSubmit} ref={this.form} >
           <Form.Item name={id? id+"-urgency":"urgency"} >
             <Rate character="!" style={{fontSize:20,fontWeight:800}} value={urgency} className="theme-comfort-icon"/>
           </Form.Item>
