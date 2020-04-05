@@ -4,7 +4,7 @@ import {Card, Button, Rate, Input, Tag, Form, Row, Typography, Select} from 'ant
 import {DeleteFilled, PlusCircleOutlined,MinusCircleOutlined,ClockCircleOutlined,CheckCircleOutlined} from '@ant-design/icons';
 import './style.css';
 import {wrapToStart} from '../../utils/strings';
-import {saveData,handleDataResults} from '../../data-service/data-handling';
+import {saveData,handleDataResults,updateARecord} from '../../data-service/data-handling';
 
 const {TextArea} = Input;
 const {Title} = Typography;
@@ -54,6 +54,7 @@ function TodoState(props){
 }
 
 function DynamicTodo(props){
+  console.log('----dynamic',props)
   const _handleTodoState = (id,state) => {
     props.handleTodoState({id,state})
   }
@@ -61,10 +62,18 @@ function DynamicTodo(props){
     fontSize:20,
     verticalAlign:'middle'
   }
+  let [oldTodos,setOldTodos] = useState(props.recordTodos);
   return (
     <div>
-      <Form.List name="todos">
+      <Form.List name={props.recordId? props.recordId + "-todos" :"todos"}>
         {(fields,{add, remove})=>{
+          if(oldTodos && oldTodos.length){
+            console.log('-------------')
+            oldTodos.map((o)=>{
+              fields.push(o);
+            })
+          }
+          console.log(fields)
           return (
             <div>
               {fields.map((f,idx)=>(
@@ -101,12 +110,15 @@ function DynamicTodo(props){
 class Note extends React.Component{
   constructor(props){
     super(props);
+    const r = this.props.data;
     this.state = {
-      content:'',
-      todos:[],
-      created:undefined,
-      tags:[],
-      urgency:0,
+      id: r? r.id : null,
+      isNew: r? false:true,
+      content: r? r.notes:'',
+      todos:r? Array.prototype.slice.call(r.todos): [],
+      created:r? r.createdAt :undefined,
+      tags:r? Array.prototype.slice.call(r.tags): [],
+      urgency:r? r.urgency : 0,
       tagInput:''
     }
     this.handleUrgencyChange = this.handleUrgencyChange.bind(this);
@@ -157,11 +169,12 @@ class Note extends React.Component{
 
   handleTodoState(e){
     this.setState((prevState)=>{
-      let prevTodos = prevState.todos, isNew=true;
+      let prevTodos = prevState.todos, isNewTodo=true;
+      let recordTodosNum = prevState.id? prevTodos.length : 0;
       prevTodos.map((t,pId)=>{
-        isNew = pId !== e.id;
+        isNewTodo = pId !== e.id;
       });
-      if(isNew){
+      if(isNewTodo){
         prevTodos.push({...e,note:''})
         return {...prevState,todos:prevTodos}
       };
@@ -180,38 +193,62 @@ class Note extends React.Component{
   }
 
   onFormSubmit(e){
+    console.log(e)
     // combine todoState array
-    let fields = [];
+    let fields = [], newE = {};
+    if(this.state.id){
+      for(var k in e){
+        newE[k.split('-')[1]] = e[k];
+      };
+      e = {...newE};
+    }
     let todosState = [...this.state.todos];
+    console.log(todosState)
     todosState = todosState.map((t,tId)=>{
       return {...t,note:e.todos[tId]}
     });
     for(var key in e){
-      fields.push({name:key,value:key === 'todos'? todosState : e[key]})
+      fields.push({name: key,value:key === 'todos'? todosState : e[key]})
     }
     fields.push({name:'tags',value:this.state.tags});
-    console.log(fields);
+    if(this.state.id){
+      console.log(fields);
+      return;
+      updateARecord('Notes',this.state.id,fields)
+        .then((res)=>{
+          console.log('update success',res)
+        })
+        .catch( e => console.log('notes update failed',e));
+      return;
+    }
     saveData('Notes',fields)
       .then((res)=>{
-        let n = handleDataResults([res],['createdAt','updatedAt']);
-        console.log(n)
+        let n = handleDataResults([res],['createdAt','updatedAt'])[0];
+        this.setState({urgency:n.urgency,todos:n.todos,created:n.createdAt,id:n.id,isNew:false},function(){
+          console.log(n,this.state);
+        })
       })
       .catch( e => console.log('save notes failed',e));
   }
 
+  handleUpdatingNote(id){
+
+  }
+
 
   render(){
-    let {tags,content,urgency} = this.state;
+    const {id} = this.state;
+    let {tags,content,urgency,todos} = this.state;
     
     return (
-      <Card hoverable className="note theme-comfort-boxShadow theme-comfort-icon-border" >
+      <Card hoverable className="note theme-comfort-boxShadow theme-comfort-noteCard-border" >
         <Form onFinish={this.onFormSubmit} >
-          <Form.Item name="urgency" >
+          <Form.Item name={id? id+"-urgency":"urgency"} >
             <Rate character="!" style={{fontSize:20,fontWeight:800}} value={urgency} className="theme-comfort-icon"/>
           </Form.Item>
           <Row style={{marginBottom:'1em'}}>
             <label htmlFor="tags" className="theme-comfort-label_underline" style={{marginRight:'1em'}}>Tags</label>
-            <input onChange={this.onTagInpChange} value={this.state.tagInput} id="tags" className="note_tagsInp"/>
+            <input onChange={this.onTagInpChange} value={this.state.tagInput} id={id? id+"-tags" :"tags"} className="note_tagsInp"/>
           </Row>
           {tags.length>0? 
             tags.map((t)=>{
@@ -219,10 +256,10 @@ class Note extends React.Component{
               return <Tag closable={true} onClose={this.onTagClosed} className="note_tagItem theme-comfort-noteTag" key={k}>{t}</Tag>;
             })
           : null}
-          <Form.Item name="notes" rules={[{required:true,message:'Please note down something...'}]}>
+          <Form.Item name={id? id+"-notes":"notes"} rules={[{required:true,message:'Please note down something...'}]}>
             <TextArea  value={content} onChange={this.onNotesChange} autoSize={{minRows:6,maxRows:8}} style={{resize:'none'}} className="note_contentInp"/> 
           </Form.Item>
-          <DynamicTodo handleAddedTodo={this.handleAddedTodo} handleTodoState={this.handleTodoState}/>
+          <DynamicTodo handleAddedTodo={this.handleAddedTodo} handleTodoState={this.handleTodoState} recordId={id} recordTodos={todos}/>
           <Form.Item>
             <Button type="primary" htmlType="submit" className="theme-comfort-button">
               Add

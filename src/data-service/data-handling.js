@@ -32,17 +32,30 @@ export const fetchAllRecords = (name) => {
   return q.find();
 }
 
+export const updateARecord = (name,id,fields) => {
+  let updateR = AV.Object.createWithoutData(name,id);
+  if(Object.prototype.toString.call(fields) !== '[object Array]'){
+    throw new Error('Must provide an array!')
+  }
+  if(!fields.length)return;
+  for(let n = 0;n<fields.length;n++){
+    updateR.set(fields[n].name,fields[n].value);
+  }
+  return updateR.save();
+}
+
 
 export const handleDataResults = (resultArr,addedFields) => {
   return resultArr.map((r)=>{
-    let id = r.id, re={...r.attributes,id};
-    addedFields = addedFields.map((f)=> {
-      let o = {};
-      o[f] = r[f];
-      return o;
-    });
-    if(addedFields.length){
-      addedFields.map((f)=>{
+    let id = r.id, re={...r.attributes,id}, copyOfAddedFields = [];
+    if(addedFields && addedFields.length){
+      copyOfAddedFields = Array.prototype.slice.call(addedFields);
+      copyOfAddedFields = copyOfAddedFields.map((f)=> {
+        let o = {};
+        o[f] = r[f];
+        return o;
+      });
+      copyOfAddedFields.map((f)=>{
         re = {...re,...f}
       });
     }
