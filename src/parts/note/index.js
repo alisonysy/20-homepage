@@ -63,18 +63,10 @@ function DynamicTodo(props){
     verticalAlign:'middle'
   }
   let [oldTodos,setOldTodos] = useState(props.recordTodos);
-  console.log('---dynmaci record todos',props.recordTodos,oldTodos)
   return (
     <div>
       <Form.List name={props.recordId? props.recordId + "-todos" :"todos"}>
-        {(fields,{add, remove})=>{//{name: 0, key: 0, fieldKey: 0} {id,state,note}
-          // if(oldTodos && oldTodos.length){
-          //   if(fields.length !== oldTodos.length){
-          //     for(let n=0;n<oldTodos.length;n++){
-          //       fields.push({name:n,key:n,fieldKey:n})
-          //     }
-          //   }
-          // }
+        {(fields,{add, remove})=>{
           return (
             <div>
               {fields.map((f,idx)=>(
@@ -120,7 +112,8 @@ class Note extends React.Component{
       created:r? r.createdAt :undefined,
       tags:r? Array.prototype.slice.call(r.tags): [],
       urgency:r? r.urgency : 0,
-      tagInput:''
+      tagInput:'',
+      loading:false
     }
     this.form = React.createRef();
     this.handleUrgencyChange = this.handleUrgencyChange.bind(this);
@@ -130,10 +123,8 @@ class Note extends React.Component{
     this.onNotesChange = this.onNotesChange.bind(this);
     this.handleAddedTodo = this.handleAddedTodo.bind(this);
     this.handleTodoState = this.handleTodoState.bind(this);
-    this.renderRecordTodosToNote = this.renderRecordTodosToNote.bind(this);
+    this.renderRecord = this.renderRecord.bind(this);
   }
-
-  
 
   handleUrgencyChange(e){
     this.setState({...this.state,urgency:e});
@@ -157,10 +148,10 @@ class Note extends React.Component{
     t.persist();
     let tagToRemove = t.target.parentElement.parentElement.textContent;
     for(let t=0;t<this.state.tags.length;t++){
-      if(this.state.tags[t].name===tagToRemove){
+      if(this.state.tags[t]===tagToRemove){
         let copiedTagsArr = [...this.state.tags];
         copiedTagsArr.splice(t,1);
-        this.setState({tags:copiedTagsArr});
+        this.setState({tags:copiedTagsArr},() => {console.log('after tags removed',this.state.tags)});
       }
     }
   }
@@ -196,57 +187,63 @@ class Note extends React.Component{
   }
 
   onFormSubmit(e){
-    console.log(e)
-    // combine todoState array
+    this.setState({loading:true});
     let fields = [], newE = {};
+    // update record - reset field names
     if(this.state.id){
       for(var k in e){
         newE[k.split('-')[1]] = e[k];
       };
       e = {...newE};
     }
+    // combine todo items from form and todo state
     let todosState = [...this.state.todos];
-    console.log(todosState)
     todosState = todosState.map((t,tId)=>{
       return {...t,note:e.todos[tId]}
     });
+    // push field names to an object to be submitted
     for(var key in e){
       fields.push({name: key,value:key === 'todos'? todosState : e[key]})
     }
     fields.push({name:'tags',value:this.state.tags});
     if(this.state.id){
-      console.log(fields);
-      return;
       updateARecord('Notes',this.state.id,fields)
         .then((res)=>{
           console.log('update success',res)
         })
-        .catch( e => console.log('notes update failed',e));
+        .catch( e => console.log('notes update failed',e))
+        .finally(()=> this.setState({loading:false}));
       return;
     }
     saveData('Notes',fields)
       .then((res)=>{
         let n = handleDataResults([res],['createdAt','updatedAt'])[0];
-        this.setState({urgency:n.urgency,todos:n.todos,created:n.createdAt,id:n.id,isNew:false},function(){
-          console.log(n,this.state);
+        this.setState({urgency:n.urgency,todos:n.todos,created:n.createdAt,id:n.id,isNew:false,content:n.notes},function(){
+          // this.renderRecord();
+          this.props.addNewRecord(n);
         })
       })
-      .catch( e => console.log('save notes failed',e));
+      .catch( e => console.log('save notes failed',e))
+      .finally(()=> this.setState({loading:false}));
   }
 
   componentDidMount(){
-    // 
     if(this.state.id){
-      this.renderRecordTodosToNote();
+      this.renderRecord();
     }
   }
 
-  renderRecordTodosToNote(){
+  renderRecord(){
     const f = this.form.current;
-    let k = this.state.id + '-todos', o ={};
+    let o ={},
+        k = this.state.id + '-todos',
+        u = this.state.id + '-urgency',
+        c = this.state.id + '-notes';
     o[k] = this.state.todos.map((t)=>{
       return t.note;
     });
+    o[u] = this.state.urgency;
+    o[c] = this.state.content;
     f.setFieldsValue({
       ...o
     })
@@ -254,13 +251,13 @@ class Note extends React.Component{
 
   render(){
     const {id} = this.state;
-    let {tags,content,urgency,todos} = this.state;
+    let {tags,content,urgency,todos,loading} = this.state;
 
     return (
       <Card hoverable className="note theme-comfort-boxShadow theme-comfort-noteCard-border" >
         <Form onFinish={this.onFormSubmit} ref={this.form} >
           <Form.Item name={id? id+"-urgency":"urgency"} >
-            <Rate character="!" style={{fontSize:20,fontWeight:800}} value={urgency} className="theme-comfort-icon"/>
+            <Rate character="!" style={{fontSize:20,fontWeight:800}}  className="theme-comfort-icon"/>
           </Form.Item>
           <Row style={{marginBottom:'1em'}}>
             <label htmlFor="tags" className="theme-comfort-label_underline" style={{marginRight:'1em'}}>Tags</label>
@@ -273,11 +270,11 @@ class Note extends React.Component{
             })
           : null}
           <Form.Item name={id? id+"-notes":"notes"} rules={[{required:true,message:'Please note down something...'}]}>
-            <TextArea  value={content} onChange={this.onNotesChange} autoSize={{minRows:6,maxRows:8}} style={{resize:'none'}} className="note_contentInp"/> 
+            <TextArea onChange={this.onNotesChange} autoSize={{minRows:6,maxRows:8}} style={{resize:'none'}} className="note_contentInp"/> 
           </Form.Item>
           <DynamicTodo handleAddedTodo={this.handleAddedTodo} handleTodoState={this.handleTodoState} recordId={id} recordTodos={todos}/>
           <Form.Item>
-            <Button type="primary" htmlType="submit" className="theme-comfort-button">
+            <Button type="primary" htmlType="submit" className="theme-comfort-button" loading={loading}>
               Add
             </Button>
           </Form.Item>

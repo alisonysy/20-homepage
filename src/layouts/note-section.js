@@ -4,6 +4,9 @@ import {fetchAllRecords,handleDataResults} from '../data-service/data-handling';
 
 export default function NoteSection(){
   let [records,setRecords] = useState([]);
+  const addNewRecord = (newRecord) => {
+    console.log(newRecord)
+  }
 
   useEffect(()=>{
     fetchAllRecords('Notes').then((res)=>{
@@ -12,8 +15,13 @@ export default function NoteSection(){
   },[])
 
   return (
-    records.map((r)=>{
-      return <Note data={r} key={r.id} />
-    })
+    <div>
+      <Note  addNewRecord={addNewRecord}/>
+    {
+      records.map((r)=>{
+        return <Note data={r} key={r.id} addNewRecord={addNewRecord}/>
+      })
+    }
+    </div>
   )
 }

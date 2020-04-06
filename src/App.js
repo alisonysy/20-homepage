@@ -15,7 +15,6 @@ function App() {
       {/* <WebsiteShortcut /> */}
       {/* <WebsiteCard /> */}
       {/* <AddFavourite /> */}
-      <Note />
       <NoteSection />
     </div>
   );
