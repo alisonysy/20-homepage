@@ -40,7 +40,7 @@ function TodoState(props){
   }
 
   return (
-    <div onClick={onChangeState} style={{display:'inline-block',verticalAlign:'middle'}}>
+    <div onClick={onChangeState} style={{display:'inline-flex',verticalAlign:'middle'}}>
       {
         todoState === todo?
           <div className="todoState_todo theme-comfort-icon-border" style={style_icon}></div>
@@ -113,7 +113,8 @@ class Note extends React.Component{
       tags:r? Array.prototype.slice.call(r.tags): [],
       urgency:r? r.urgency : 0,
       tagInput:'',
-      loading:false
+      loading:false,
+      isEdit:r? false : true
     }
     this.form = React.createRef();
     this.handleUrgencyChange = this.handleUrgencyChange.bind(this);
@@ -124,6 +125,8 @@ class Note extends React.Component{
     this.handleAddedTodo = this.handleAddedTodo.bind(this);
     this.handleTodoState = this.handleTodoState.bind(this);
     this.renderRecord = this.renderRecord.bind(this);
+    this.resetForm = this.resetForm.bind(this);
+    this.turnToEditMode = this.turnToEditMode.bind(this);
   }
 
   handleUrgencyChange(e){
@@ -209,7 +212,8 @@ class Note extends React.Component{
     if(this.state.id){
       updateARecord('Notes',this.state.id,fields)
         .then((res)=>{
-          console.log('update success',res)
+          console.log('update success',res);
+          this.setState({isEdit:false})
         })
         .catch( e => console.log('notes update failed',e))
         .finally(()=> this.setState({loading:false}));
@@ -221,6 +225,7 @@ class Note extends React.Component{
         this.setState({urgency:n.urgency,todos:n.todos,created:n.createdAt,id:n.id,isNew:false,content:n.notes},function(){
           // this.renderRecord();
           this.props.addNewRecord(n);
+          this.resetForm();
         })
       })
       .catch( e => console.log('save notes failed',e))
@@ -228,7 +233,13 @@ class Note extends React.Component{
   }
 
   componentDidMount(){
-    if(this.state.id){
+    if(this.state.id && this.state.isEdit){
+      this.renderRecord();
+    }
+  }
+
+  componentDidUpdate(){
+    if(this.state.id && this.state.isEdit){
       this.renderRecord();
     }
   }
@@ -249,13 +260,28 @@ class Note extends React.Component{
     })
   }
 
+  resetForm(){
+    const f = this.form.current;
+    f.setFieldsValue({
+      urgency:0,
+      notes:'',
+      todos:[]
+    });
+    this.setState({content:'',todos:[],tagInput:'',tags:[],urgency:0,isNew:true,createdAt:undefined,id:null})
+  }
+
+  turnToEditMode(){
+    this.setState({isEdit:true});
+  }
+
   render(){
-    const {id} = this.state;
+    const {id,isEdit} = this.state;
     let {tags,content,urgency,todos,loading} = this.state;
 
     return (
-      <Card hoverable className="note theme-comfort-boxShadow theme-comfort-noteCard-border" >
-        <Form onFinish={this.onFormSubmit} ref={this.form} >
+      <Card hoverable className="note theme-comfort-boxShadow theme-comfort-noteCard-border" style={{cursor:'default'}}>
+        { isEdit?
+          (<Form onFinish={this.onFormSubmit} ref={this.form} >
           <Form.Item name={id? id+"-urgency":"urgency"} >
             <Rate character="!" style={{fontSize:20,fontWeight:800}}  className="theme-comfort-icon"/>
           </Form.Item>
@@ -278,7 +304,34 @@ class Note extends React.Component{
               Add
             </Button>
           </Form.Item>
-        </Form>
+        </Form>) :
+          (
+            <div >
+              <div className="note_editBtn theme-comfort-helpText" onClick={this.turnToEditMode}>Edit</div>
+              <Form.Item >
+                <Rate character="!" style={{fontSize:20,fontWeight:800}}  className="theme-comfort-icon" disabled defaultValue={urgency}/>
+              </Form.Item>
+              {tags.length>0? 
+                tags.map((t)=>{
+                  let k = 'notes-'+t;
+                  return <Tag className="note_tagItem theme-comfort-noteTag" key={k}>{t}</Tag>;
+                })
+              : null}
+              <Form.Item style={{marginTop:'1em'}}>
+                <div className="note_contentInp" style={{minHeight:160,overflowY:'auto',textAlign:'left'}}>{content}</div>
+              </Form.Item>
+              <div>
+                {todos.map((t,idx)=>(
+                  <Form.Item>
+                    <TodoState handleTodoState={()=>{}} todoId={idx} state={t.state}/>
+                    <div style={{display:'inline-block',width:'75%',textAlign:'left'}}>{t.note}</div>
+                  </Form.Item>
+                ))}
+              </div>
+            </div>
+          )
+        }
+        
       </Card>
     )
   }

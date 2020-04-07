@@ -53,6 +53,12 @@
 .theme-comfort-icon{
   color:#e79796 !important;
 }
+.theme-comfort-helpText{
+  color:#e79796 !important;
+}
+.theme-comfort-helpText:hover{
+  color:#ffb284;
+}
 .theme-comfort-icon-border{
   border:1px solid #e79796 ;
 }
