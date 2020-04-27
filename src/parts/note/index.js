@@ -28,6 +28,7 @@ function TodoState(props){
 
   useEffect(()=>{
     if(props.state)setTodoState(props.state);
+    debugger;
     props.handleTodoState(props.todoId,todoState);
   },[]);
 
@@ -38,6 +39,8 @@ function TodoState(props){
     setTodoState(nextState);
     props.handleTodoState(props.todoId,nextState);
   }
+
+  debugger;
 
   return (
     <div onClick={onChangeState} style={{display:'inline-flex',verticalAlign:'middle'}}>
@@ -55,6 +58,7 @@ function TodoState(props){
 }
 
 function DynamicTodo(props){
+  
   const _handleTodoState = (id,state) => {
     props.handleTodoState({id,state})
   }
@@ -63,6 +67,7 @@ function DynamicTodo(props){
     verticalAlign:'middle'
   }
   let [oldTodos,setOldTodos] = useState(props.recordTodos);
+  debugger;
   return (
     <div>
       <Form.List name={props.recordId? props.recordId + "-todos" :"todos"}>
@@ -150,6 +155,7 @@ class Note extends React.Component{
   onTagClosed(t){
     t.persist();
     let tagToRemove = t.target.parentElement.parentElement.textContent;
+    console.log('tag to remove',tagToRemove,t.target.parentElement.parentElement)
     for(let t=0;t<this.state.tags.length;t++){
       if(this.state.tags[t]===tagToRemove){
         let copiedTagsArr = [...this.state.tags];
@@ -165,6 +171,7 @@ class Note extends React.Component{
   }
 
   handleTodoState(e){
+    debugger;
     this.setState((prevState)=>{
       let prevTodos = prevState.todos, isNewTodo=true;
       let recordTodosNum = prevState.id? prevTodos.length : 0;
@@ -204,6 +211,7 @@ class Note extends React.Component{
     todosState = todosState.map((t,tId)=>{
       return {...t,note:e.todos[tId]}
     });
+    // this.setState({todos:todosState});
     // push field names to an object to be submitted
     for(var key in e){
       fields.push({name: key,value:key === 'todos'? todosState : e[key]})
@@ -277,6 +285,8 @@ class Note extends React.Component{
   render(){
     const {id,isEdit} = this.state;
     let {tags,content,urgency,todos,loading} = this.state;
+    debugger;
+    console.log('is edit?---',isEdit,todos)
 
     return (
       <Card hoverable className="note theme-comfort-boxShadow theme-comfort-noteCard-border" style={{cursor:'default'}}>
@@ -322,7 +332,7 @@ class Note extends React.Component{
               </Form.Item>
               <div>
                 {todos.map((t,idx)=>(
-                  <Form.Item>
+                  <Form.Item key={'todo-'+idx}>
                     <TodoState handleTodoState={()=>{}} todoId={idx} state={t.state}/>
                     <div style={{display:'inline-block',width:'75%',textAlign:'left'}}>{t.note}</div>
                   </Form.Item>

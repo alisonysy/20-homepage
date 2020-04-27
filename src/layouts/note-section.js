@@ -21,7 +21,7 @@ export default function NoteSection(){
         return <Note data={r} key={r.id} addNewRecord={addNewRecord}/>
       })
     }
-      <Note  addNewRecord={addNewRecord}/>
+      <Note  addNewRecord={addNewRecord} key="add-note"/>
     </div>
   )
 }
