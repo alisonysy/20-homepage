@@ -4,6 +4,7 @@ import {Card, Button, Rate, Input, Tag, Form, Row, Typography, Select} from 'ant
 import {DeleteFilled, PlusCircleOutlined,MinusCircleOutlined,ClockCircleOutlined,CheckCircleOutlined} from '@ant-design/icons';
 import './style.css';
 import {wrapToStart} from '../../utils/strings';
+import {findParentEl} from '../../utils/dom';
 import {saveData,handleDataResults,updateARecord} from '../../data-service/data-handling';
 
 const {TextArea} = Input;
@@ -28,7 +29,6 @@ function TodoState(props){
 
   useEffect(()=>{
     if(props.state)setTodoState(props.state);
-    debugger;
     props.handleTodoState(props.todoId,todoState);
   },[]);
 
@@ -40,7 +40,6 @@ function TodoState(props){
     props.handleTodoState(props.todoId,nextState);
   }
 
-  debugger;
 
   return (
     <div onClick={onChangeState} style={{display:'inline-flex',verticalAlign:'middle'}}>
@@ -62,12 +61,19 @@ function DynamicTodo(props){
   const _handleTodoState = (id,state) => {
     props.handleTodoState({id,state})
   }
+
+  const _removeTodo = (key) => {
+    let temp = oldTodos.filter(t => t.id !== key);
+    temp.map( (t,idx) => t.id = idx );
+    setOldTodos(temp);
+    props.handleRemovedTodo(temp);
+  }
+
   const style_icon = {
     fontSize:20,
     verticalAlign:'middle'
   }
   let [oldTodos,setOldTodos] = useState(props.recordTodos);
-  debugger;
   return (
     <div>
       <Form.List name={props.recordId? props.recordId + "-todos" :"todos"}>
@@ -80,6 +86,7 @@ function DynamicTodo(props){
                   required={false}
                   key={f.key}
                 >
+                  {f.name}
                   <TodoState handleTodoState={_handleTodoState} todoId={f.key} state={oldTodos[f.key]? oldTodos[f.key].state : null}/>
                   <Form.Item
                     noStyle
@@ -89,7 +96,7 @@ function DynamicTodo(props){
                   >
                     <Input placeholder="To do ..."  style={{display:'inline-block',width:'75%'}} className="note_todoItemInp" />
                   </Form.Item>
-                  {fields.length>0? (<MinusCircleOutlined onClick={()=> remove(f.name)} style={style_icon} className="theme-comfort-icon-secondary"/>) : null}
+                  {fields.length>0? (<MinusCircleOutlined onClick={()=> {remove(f.name);_removeTodo(f.key)}} style={style_icon} className="theme-comfort-icon-secondary"/>) : null}
                 </Form.Item>
               ))}
               <Form.Item>
@@ -122,20 +129,16 @@ class Note extends React.Component{
       isEdit:r? false : true
     }
     this.form = React.createRef();
-    this.handleUrgencyChange = this.handleUrgencyChange.bind(this);
     this.onFormSubmit = this.onFormSubmit.bind(this);
     this.onTagClosed = this.onTagClosed.bind(this);
     this.onTagInpChange = this.onTagInpChange.bind(this);
     this.onNotesChange = this.onNotesChange.bind(this);
     this.handleAddedTodo = this.handleAddedTodo.bind(this);
+    this.handleRemovedTodo = this.handleRemovedTodo.bind(this);
     this.handleTodoState = this.handleTodoState.bind(this);
     this.renderRecord = this.renderRecord.bind(this);
     this.resetForm = this.resetForm.bind(this);
     this.turnToEditMode = this.turnToEditMode.bind(this);
-  }
-
-  handleUrgencyChange(e){
-    this.setState({...this.state,urgency:e});
   }
 
   onTagInpChange(e){
@@ -154,8 +157,7 @@ class Note extends React.Component{
 
   onTagClosed(t){
     t.persist();
-    let tagToRemove = t.target.parentElement.parentElement.textContent;
-    console.log('tag to remove',tagToRemove,t.target.parentElement.parentElement)
+    let tagToRemove = findParentEl(t.target,'note_tagItem').textContent;
     for(let t=0;t<this.state.tags.length;t++){
       if(this.state.tags[t]===tagToRemove){
         let copiedTagsArr = [...this.state.tags];
@@ -171,12 +173,13 @@ class Note extends React.Component{
   }
 
   handleTodoState(e){
-    debugger;
     this.setState((prevState)=>{
       let prevTodos = prevState.todos, isNewTodo=true;
       let recordTodosNum = prevState.id? prevTodos.length : 0;
       prevTodos.map((t,pId)=>{
-        isNewTodo = pId !== e.id;
+        if(pId === e.id){
+          isNewTodo = false;
+        }
       });
       if(isNewTodo){
         prevTodos.push({...e,note:''})
@@ -194,6 +197,10 @@ class Note extends React.Component{
         return {...prev,todos:[...prevTodos,e]}
       };
     },function(){console.log('new todos',this.state.todos)})
+  }
+
+  handleRemovedTodo(newTodosArray){
+    this.setState({todos:newTodosArray});
   }
 
   onFormSubmit(e){
@@ -221,7 +228,7 @@ class Note extends React.Component{
       updateARecord('Notes',this.state.id,fields)
         .then((res)=>{
           console.log('update success',res);
-          this.setState({isEdit:false})
+          this.setState({isEdit:false,urgency:res.attributes.urgency})
         })
         .catch( e => console.log('notes update failed',e))
         .finally(()=> this.setState({loading:false}));
@@ -285,8 +292,6 @@ class Note extends React.Component{
   render(){
     const {id,isEdit} = this.state;
     let {tags,content,urgency,todos,loading} = this.state;
-    debugger;
-    console.log('is edit?---',isEdit,todos)
 
     return (
       <Card hoverable className="note theme-comfort-boxShadow theme-comfort-noteCard-border" style={{cursor:'default'}}>
@@ -308,7 +313,7 @@ class Note extends React.Component{
           <Form.Item name={id? id+"-notes":"notes"} rules={[{required:true,message:'Please note down something...'}]}>
             <TextArea onChange={this.onNotesChange} autoSize={{minRows:6,maxRows:8}} style={{resize:'none'}} className="note_contentInp"/> 
           </Form.Item>
-          <DynamicTodo handleAddedTodo={this.handleAddedTodo} handleTodoState={this.handleTodoState} recordId={id} recordTodos={todos}/>
+          <DynamicTodo handleAddedTodo={this.handleAddedTodo} handleTodoState={this.handleTodoState} handleRemovedTodo={this.handleRemovedTodo} recordId={id} recordTodos={todos}/>
           <Form.Item>
             <Button type="primary" htmlType="submit" className="theme-comfort-button" loading={loading}>
               Add
