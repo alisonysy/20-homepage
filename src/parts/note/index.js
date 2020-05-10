@@ -20,7 +20,7 @@ function AddNote(){
 function TodoState(props){
   const todo = 'todo', doing = 'doing', done = 'done';
   const stateArr = [todo,doing,done];
-  let [todoState,setTodoState] = useState(todo);
+  let [todoState,setTodoState] = useState(props.state);
 
   const style_icon = {
     fontSize:20,
@@ -59,6 +59,21 @@ function TodoState(props){
 function DynamicTodo(props){
   
   const _handleTodoState = (id,state) => {
+    let isNewTodo = true;
+    let temp = oldTodos.map((o,oId)=>{
+      if(oId === id){
+        isNewTodo = false;
+        o.state = state;
+      }
+      return o;
+    });
+    if(isNewTodo){
+      console.log('added new todo')
+      setOldTodos([...oldTodos,{id,state,note:''}]);
+    }else{
+      console.log('edited original todo',temp)
+      setOldTodos(temp);
+    }
     props.handleTodoState({id,state})
   }
 
@@ -67,6 +82,21 @@ function DynamicTodo(props){
     temp.map( (t,idx) => t.id = idx );
     setOldTodos(temp);
     props.handleRemovedTodo(temp);
+  }
+
+  const onTodoInputChange = (e,idx) => {
+    e.persist();
+    let v = e.target.value;
+    console.log('old todos',oldTodos,idx);
+    // setOldTodos([...oldTodos,{}])
+    let temp = oldTodos.map((o,oId)=>{
+      if(idx===oId){
+        o.note = v;
+      };
+      return o;
+    });
+    setOldTodos(temp);
+    props.handleTodoNote(v,idx)
   }
 
   const style_icon = {
@@ -86,15 +116,14 @@ function DynamicTodo(props){
                   required={false}
                   key={f.key}
                 >
-                  {f.name}
-                  <TodoState handleTodoState={_handleTodoState} todoId={f.key} state={oldTodos[f.key]? oldTodos[f.key].state : null}/>
+                  <TodoState handleTodoState={_handleTodoState} todoId={f.key} state={oldTodos[f.key]? oldTodos[f.key].state : 'todo'}/>
                   <Form.Item
                     noStyle
                     {...f}
                     validateTrigger={['onBlur']}
                     rules={[{required:true,whitespace:true,message:'Please add a to-do or delete this field.'}]}
                   >
-                    <Input placeholder="To do ..."  style={{display:'inline-block',width:'75%'}} className="note_todoItemInp" />
+                    <Input placeholder="To do ..."  style={{display:'inline-block',width:'75%'}} className="note_todoItemInp" onChange={(e) => onTodoInputChange(e,f.name)}/>
                   </Form.Item>
                   {fields.length>0? (<MinusCircleOutlined onClick={()=> {remove(f.name);_removeTodo(f.key)}} style={style_icon} className="theme-comfort-icon-secondary"/>) : null}
                 </Form.Item>
@@ -130,15 +159,21 @@ class Note extends React.Component{
     }
     this.form = React.createRef();
     this.onFormSubmit = this.onFormSubmit.bind(this);
+    this.onUrgencyChange = this.onUrgencyChange.bind(this);
     this.onTagClosed = this.onTagClosed.bind(this);
     this.onTagInpChange = this.onTagInpChange.bind(this);
     this.onNotesChange = this.onNotesChange.bind(this);
     this.handleAddedTodo = this.handleAddedTodo.bind(this);
     this.handleRemovedTodo = this.handleRemovedTodo.bind(this);
     this.handleTodoState = this.handleTodoState.bind(this);
+    this.handleTodoNote = this.handleTodoNote.bind(this);
     this.renderRecord = this.renderRecord.bind(this);
     this.resetForm = this.resetForm.bind(this);
     this.turnToEditMode = this.turnToEditMode.bind(this);
+  }
+
+  onUrgencyChange(n){
+    this.setState({urgency:n});
   }
 
   onTagInpChange(e){
@@ -176,6 +211,7 @@ class Note extends React.Component{
     this.setState((prevState)=>{
       let prevTodos = prevState.todos, isNewTodo=true;
       let recordTodosNum = prevState.id? prevTodos.length : 0;
+      console.log('to do state',e,prevTodos)
       prevTodos.map((t,pId)=>{
         if(pId === e.id){
           isNewTodo = false;
@@ -188,6 +224,23 @@ class Note extends React.Component{
       prevTodos[e.id] = {...prevTodos[e.id],...e};
       return {...prevState,todos:[...prevTodos]}
     });
+  }
+
+  handleTodoNote(c,id){
+    this.setState((prevState)=>{
+      let prevTodos = prevState.todos,isNewTodo = true;
+      prevTodos.map((t,pId)=>{
+        if(pId === id){
+          isNewTodo = false;
+        }
+      });
+      if(isNewTodo){
+        prevTodos.push({id,note:c,state:'todo'});
+        return {...prevState,todos:prevTodos}
+      };
+      prevTodos[id] = {...prevTodos[id],note:c};
+      return {...prevState,todos:[...prevTodos]}
+    })
   }
 
   handleAddedTodo(e){
@@ -213,12 +266,8 @@ class Note extends React.Component{
       };
       e = {...newE};
     }
-    // combine todo items from form and todo state
+    // shallow copy todosState from state
     let todosState = [...this.state.todos];
-    todosState = todosState.map((t,tId)=>{
-      return {...t,note:e.todos[tId]}
-    });
-    // this.setState({todos:todosState});
     // push field names to an object to be submitted
     for(var key in e){
       fields.push({name: key,value:key === 'todos'? todosState : e[key]})
@@ -298,7 +347,7 @@ class Note extends React.Component{
         { isEdit?
           (<Form onFinish={this.onFormSubmit} ref={this.form} >
           <Form.Item name={id? id+"-urgency":"urgency"} >
-            <Rate character="!" style={{fontSize:20,fontWeight:800}}  className="theme-comfort-icon"/>
+            <Rate character="!" style={{fontSize:20,fontWeight:800}}  className="theme-comfort-icon" onChange={this.onUrgencyChange}/>
           </Form.Item>
           <Row style={{marginBottom:'1em'}}>
             <label htmlFor="tags" className="theme-comfort-label_underline" style={{marginRight:'1em'}}>Tags</label>
@@ -313,7 +362,13 @@ class Note extends React.Component{
           <Form.Item name={id? id+"-notes":"notes"} rules={[{required:true,message:'Please note down something...'}]}>
             <TextArea onChange={this.onNotesChange} autoSize={{minRows:6,maxRows:8}} style={{resize:'none'}} className="note_contentInp"/> 
           </Form.Item>
-          <DynamicTodo handleAddedTodo={this.handleAddedTodo} handleTodoState={this.handleTodoState} handleRemovedTodo={this.handleRemovedTodo} recordId={id} recordTodos={todos}/>
+          <DynamicTodo 
+            handleAddedTodo={this.handleAddedTodo} 
+            handleTodoState={this.handleTodoState} 
+            handleRemovedTodo={this.handleRemovedTodo} 
+            handleTodoNote={this.handleTodoNote}
+            recordId={id} recordTodos={todos}
+          />
           <Form.Item>
             <Button type="primary" htmlType="submit" className="theme-comfort-button" loading={loading}>
               Add
