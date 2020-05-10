@@ -96,3 +96,8 @@
   border-radius: 20px !important;
   min-width: 80% !important;
 }
+
+/* utility class */
+.util-clearFix{
+  clear: both;
+}

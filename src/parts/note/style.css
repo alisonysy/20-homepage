@@ -36,8 +36,12 @@
 }
 
 .note_editBtn{
-  position: absolute;
-  right:5%;
-  top:2%;
+  float: right;
+  cursor: pointer;
+}
+
+.note_delBtn{
+  float:right;
+  margin-right: 5%;
   cursor: pointer;
 }

@@ -63,6 +63,11 @@ export const handleDataResults = (resultArr,addedFields) => {
   })
 }
 
+export const deleteRecord = (name,id) => {
+  const r = AV.Object.createWithoutData(name, id);
+  return r.destroy(); 
+}
+
 
 // for one-time use
 export const _uploadImg = (elId) => {

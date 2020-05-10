@@ -5,7 +5,7 @@ import {DeleteFilled, PlusCircleOutlined,MinusCircleOutlined,ClockCircleOutlined
 import './style.css';
 import {wrapToStart} from '../../utils/strings';
 import {findParentEl} from '../../utils/dom';
-import {saveData,handleDataResults,updateARecord} from '../../data-service/data-handling';
+import {saveData,handleDataResults,updateARecord,deleteRecord} from '../../data-service/data-handling';
 
 const {TextArea} = Input;
 const {Title} = Typography;
@@ -68,10 +68,8 @@ function DynamicTodo(props){
       return o;
     });
     if(isNewTodo){
-      console.log('added new todo')
       setOldTodos([...oldTodos,{id,state,note:''}]);
     }else{
-      console.log('edited original todo',temp)
       setOldTodos(temp);
     }
     props.handleTodoState({id,state})
@@ -81,13 +79,13 @@ function DynamicTodo(props){
     let temp = oldTodos.filter(t => t.id !== key);
     temp.map( (t,idx) => t.id = idx );
     setOldTodos(temp);
+    console.log('removed',temp)
     props.handleRemovedTodo(temp);
   }
 
   const onTodoInputChange = (e,idx) => {
     e.persist();
     let v = e.target.value;
-    console.log('old todos',oldTodos,idx);
     // setOldTodos([...oldTodos,{}])
     let temp = oldTodos.map((o,oId)=>{
       if(idx===oId){
@@ -170,6 +168,7 @@ class Note extends React.Component{
     this.renderRecord = this.renderRecord.bind(this);
     this.resetForm = this.resetForm.bind(this);
     this.turnToEditMode = this.turnToEditMode.bind(this);
+    this.deleteRecord = this.deleteRecord.bind(this);
   }
 
   onUrgencyChange(n){
@@ -210,8 +209,6 @@ class Note extends React.Component{
   handleTodoState(e){
     this.setState((prevState)=>{
       let prevTodos = prevState.todos, isNewTodo=true;
-      let recordTodosNum = prevState.id? prevTodos.length : 0;
-      console.log('to do state',e,prevTodos)
       prevTodos.map((t,pId)=>{
         if(pId === e.id){
           isNewTodo = false;
@@ -338,6 +335,17 @@ class Note extends React.Component{
     this.setState({isEdit:true});
   }
 
+  deleteRecord(){
+    const self = this;
+    let idToDel = this.state.id;
+    if(!idToDel) return;
+    deleteRecord('Notes',idToDel)
+      .then((res)=> {
+        self.props.deleteRecord(idToDel);
+      })
+      .catch( e => console.log('failed to delete this record',e));
+  }
+
   render(){
     const {id,isEdit} = this.state;
     let {tags,content,urgency,todos,loading} = this.state;
@@ -376,8 +384,10 @@ class Note extends React.Component{
           </Form.Item>
         </Form>) :
           (
-            <div >
+            <div className="">
               <div className="note_editBtn theme-comfort-helpText" onClick={this.turnToEditMode}>Edit</div>
+              <div className="note_delBtn theme-comfort-helpText" onClick={this.deleteRecord}>Delete</div>
+              <div className="util-clearFix"></div>
               <Form.Item >
                 <Rate character="!" style={{fontSize:20,fontWeight:800}}  className="theme-comfort-icon" disabled defaultValue={urgency}/>
               </Form.Item>

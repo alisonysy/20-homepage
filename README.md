@@ -90,6 +90,8 @@ this.setState((prevArr)=>{
 3. 标签 - 与网页的标签无关
 4. 紧急情况
 
+优化：
+1. `note-section`里关于抓取记录的性能优化，删除记录后不再重新抓取。
 
 ## Notes
 ### About Ant Design
