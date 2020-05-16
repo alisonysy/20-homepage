@@ -351,7 +351,7 @@ class Note extends React.Component{
     let {tags,content,urgency,todos,loading} = this.state;
 
     return (
-      <Card hoverable className="note theme-comfort-boxShadow theme-comfort-noteCard-border" style={{cursor:'default'}}>
+      <Card hoverable className="note theme-comfort-boxShadow theme-comfort-noteCard-border" style={{cursor:'default',flexShrink:0}}>
         { isEdit?
           (<Form onFinish={this.onFormSubmit} ref={this.form} >
           <Form.Item name={id? id+"-urgency":"urgency"} >

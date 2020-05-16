@@ -34,6 +34,7 @@ export default class WebsiteCard extends React.Component {
   constructor(props){
     super(props);
     this.state = {
+      id:null,
       domain:'',
       url:'',
       title:'',
@@ -42,6 +43,7 @@ export default class WebsiteCard extends React.Component {
       icon:null,
       key:undefined
     }
+    this.keydownHandler = this.keydownHandler.bind(this);
   };
 
   componentWillReceiveProps(props){
@@ -52,21 +54,33 @@ export default class WebsiteCard extends React.Component {
   }
 
   componentDidMount(){
-    document.addEventListener('keypress',(k) => {
-      if(this.state.key && k.key === this.state.key){
-        window && window.open(this.state.url,'_blank')
-      }
-    })
+    if(this.props.listenOnKeyboard){
+      document.addEventListener('keydown',this.keydownHandler)
+    }
+  }
+
+  componentDidUpdate(){
+    if(!this.props.listenOnKeyboard){
+      document.removeEventListener('keydown',this.keydownHandler);
+    }else{
+      document.addEventListener('keydown',this.keydownHandler);
+    }
+  }
+
+  keydownHandler(k){
+    if(this.state.key && k.key === this.state.key){
+      window && window.open(this.state.url,'_blank')
+    }
   }
 
   render(){
     let hasUrl = this.state.url.length? true : false;
     let {domain,url,icon,key,tags} = this.state;
-    console.log(this.state,url)
     return (
       <Card 
         hoverable
-        className="websiteCard"
+        className="websiteCard theme-comfort-websiteCard-background theme-comfort-websiteCard-fontColor"
+        style={{display:'inline-block',marginRight:'1em',marginBottom:'1em',textAlign:'center',float:'left'}}
       >
         <div className="websiteCard-body">
         { key && key.length? <div className="websiteCard-body_inner_key">&lt;{key}&gt;</div> : null}
@@ -77,7 +91,7 @@ export default class WebsiteCard extends React.Component {
               <div>
                 {tags.length? 
                   tags.map((t)=>{
-                    return <Tag color={t.color? t.color: '#ddd'}>{t.name}</Tag>
+                    return <Tag color={t.color? t.color: '#ddd'} key={'websiteCard-tag-'+t.name}>{t.name}</Tag>
                   }):null
                 }
                 <Typography.Title level={4} style={{...inlineStyle.font,display:'inline-block',verticalAlign:'middle'}}>{this.state.category}</Typography.Title>

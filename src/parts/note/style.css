@@ -1,6 +1,9 @@
 .note{
   width:250px;
   border-radius: 10px;
+  display: inline-block;
+  margin-right: 1em;
+  vertical-align: top;
 }
 
 .note_tagsInp, .note_todoItemInp{border:none;border-bottom:1px solid #c6c09c3d;}

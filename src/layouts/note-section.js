@@ -20,7 +20,7 @@ export default function NoteSection(){
   },[records.length])
 
   return (
-    <div>
+    <div style={{textAlign:'left',display:'flex',flexFlow:'row nowrap',overflow:'auto'}}>
     {
       records.map((r)=>{
         return <Note data={r} key={r.id} addNewRecord={addNewRecord} deleteRecord={deleteRecord}/>

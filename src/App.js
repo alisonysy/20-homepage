@@ -11,11 +11,15 @@ import Note from './parts/note';
 
 function App() {
   return (
-    <div className="App">
-      {/* <WebsiteShortcut /> */}
+    <div className="App" style={{display:'flex',flexFlow:'row nowrap'}}>
+      <div style={{width:'50%',padding:'1.5em'}}>
+        <WebsiteShortcut />
+      </div>
+      <div style={{width:'50%',height:'100vh',padding:'1.5em'}}>
+        <NoteSection />
+      </div>
       {/* <WebsiteCard /> */}
       {/* <AddFavourite /> */}
-      <NoteSection />
     </div>
   );
 }

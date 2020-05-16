@@ -20,7 +20,7 @@ function TagField({rules,layout,outputTags}){
       <Form.Item label="Tags" {...layout} className="addFavouriteForm--tags">
         <Input.Group compact>
           <Form.Item name="tags" rules={rules} className="addFavouriteForm--tags_input">
-            <Input onChange={onTagInputChange} placeholder="A tag will be generated once there is ','." />
+            <Input onChange={onTagInputChange} placeholder="A tag will be generated once there is ','." className="theme-comfort-input"/>
           </Form.Item>
         </Input.Group>
       </Form.Item>
@@ -214,26 +214,26 @@ function AddFavouriteForm(props){
       className="addFavouriteForm"
     >
       <Form.Item label="Title" name="title" rules={[validation(true,'Give me a name!')]} {...formItemLayout}>
-        <Input />
+        <Input className="theme-comfort-input"/>
       </Form.Item>
       <Form.Item label="Website" {...formItemLayout}>
         <Input.Group compact>
           <Form.Item name={['url']} rules={[validation(true,'Give me a url!')]} style={{marginBottom:0}}>
-            <Input placeholder="Website's full url"/>
+            <Input placeholder="Website's full url" className="theme-comfort-input"/>
           </Form.Item>
           <Form.Item name={['domain']} rules={[validation(false,'')]} style={{marginLeft:'0.5em',marginBottom:0}}>
-            <Input placeholder="Website's domain" />
+            <Input placeholder="Website's domain" className="theme-comfort-input"/>
           </Form.Item>
         </Input.Group>
       </Form.Item>
       <Form.Item label="Icon" name="icon" rules={[validation(false,'')]} {...formItemLayout}>
-        <Input placeholder="Image url"/>
+        <Input placeholder="Image url" className="theme-comfort-input"/>
       </Form.Item>
       <Form.Item label="Category" name="category" rules={[validation(false,'')]} {...formItemLayout}>
-        <Input />
+        <Input className="theme-comfort-input"/>
       </Form.Item>
       <Form.Item label="Key" name="key" rules={[validation(false,'')]} {...formItemLayout}>
-        <Input placeholder="A single alphanumeric to press"/>
+        <Input placeholder="A single alphanumeric to press" className="theme-comfort-input"/>
       </Form.Item>
       <TagField rules={[validation(false,'')]} layout={formItemLayout} outputTags={outputTags}/>
       {tagsArr.length>0? (<Row className="addFavouriteForm--tagsBoard">
@@ -246,7 +246,7 @@ function AddFavouriteForm(props){
         })}
       </Row>) : null}
       <Form.Item {...formItemTailLayout}>
-        <Button type="primary" htmlType="submit" loading={loading}>
+        <Button type="primary" htmlType="submit" loading={loading} className="theme-comfort-button">
           Add
         </Button>
       </Form.Item>
@@ -254,6 +254,11 @@ function AddFavouriteForm(props){
   )
 }
 
+const addFavouriteWrapperStyle = {
+  minWidth:150,
+  maxWidth:200,
+  width:'30%',
+}
 export default class AddFavourite extends React.Component{
   constructor(props){
     super(props);
@@ -272,13 +277,13 @@ export default class AddFavourite extends React.Component{
   onFormCancel(e){
     this.setState({ visible: false });
   }
-
+  
   render(){
     const {visible,loading} = this.state;
     return (
-      <div>
-        <Button type="primary" onClick={this.openForm}>
-          Open Modal with customized footer
+      <div style={{...addFavouriteWrapperStyle,display:'inline-block',float:'left'}}>
+        <Button type="primary" onClick={this.openForm} style={{width:'100%',paddingTop:'100%',position:'relative',borderRadius:'5%',border:'none'}} className="theme-comfort-websiteCard-background">
+          
         </Button>
         <Modal
           visible={visible}

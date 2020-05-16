@@ -44,6 +44,12 @@
 }
 
 /* theme */
+.theme-comfort-websiteCard-background{
+  background-image: linear-gradient(to top, #c6c09c 0%, #f5cec7 100%) !important;
+}
+.theme-comfort-websiteCard-fontColor.ant-card{
+  color:#fff;
+}
 .theme-comfort-noteCard-border{
   border:1px solid rgba(245,206,199,0.4) !important;
 }
@@ -95,6 +101,13 @@
   border:none !important;
   border-radius: 20px !important;
   min-width: 80% !important;
+}
+.theme-comfort-input:hover{
+  border-color: #ffb284 !important;
+}
+.theme-comfort-input:focus{
+  border-color: #ffb284 !important;
+  box-shadow: 0 0 0 2px rgba(255, 177, 132, 0.5) !important;
 }
 
 /* utility class */
