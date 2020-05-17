@@ -3,7 +3,7 @@ import WebsiteCard from '../parts/website-card';
 import AddFavourite from '../parts/add-favourite';
 import {fetchAllRecords,handleDataResults} from '../data-service/data-handling';
 
-export default function WebsiteShortcut(){
+export default function WebsiteShortcut(props){
   let [records,setRecords] = useState([]);
   let [allTags,setAllTags] = useState([]);
   let [listenOnKeyboard,setListenOnKeyboard] = useState(true);
@@ -25,10 +25,12 @@ export default function WebsiteShortcut(){
       if(k.code === 'ShiftLeft'){
         if(listenOnKeyboard){
           setListenOnKeyboard(false);
+          props.handleListenerDisplay(false);
         }else{
           setListenOnKeyboard(true);
+          props.handleListenerDisplay(true);
         }
-      }
+      };
     })
   },[listenOnKeyboard])
 
@@ -47,7 +49,7 @@ export default function WebsiteShortcut(){
         return <WebsiteCard data={r} key={r.id} listenOnKeyboard={listenOnKeyboard} />
       })
     }
-    <AddFavourite handleListenOnKeyboard={() => setListenOnKeyboard(false)}/>
+    <AddFavourite handleListenOnKeyboard={() => setListenOnKeyboard(false)} handleAddedRecord={()=>{setRecords([])}}/>
     </div>
   )
 }

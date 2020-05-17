@@ -142,6 +142,7 @@ function AddFavouriteForm(props){
       .then((res)=>{
         console.log('saved!----',res);
         props.closeModal();
+        props.handleAddedRecord();
       }).catch((e)=>console.log(e))
       .finally(()=>setLoading(false))
 
@@ -309,7 +310,7 @@ export default class AddFavourite extends React.Component{
           onCancel={this.onFormCancel}
           footer={null}
         >
-          <AddFavouriteForm closeModal={this.onFormCancel}/>
+          <AddFavouriteForm closeModal={this.onFormCancel} handleAddedRecord={this.props.handleAddedRecord}/>
         </Modal>
       </div>
     )
