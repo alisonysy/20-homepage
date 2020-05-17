@@ -47,7 +47,7 @@ export default function WebsiteShortcut(){
         return <WebsiteCard data={r} key={r.id} listenOnKeyboard={listenOnKeyboard} />
       })
     }
-    <AddFavourite />
+    <AddFavourite handleListenOnKeyboard={() => setListenOnKeyboard(false)}/>
     </div>
   )
 }

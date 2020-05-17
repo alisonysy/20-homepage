@@ -272,6 +272,7 @@ export default class AddFavourite extends React.Component{
 
   openForm(){
     this.setState({visible:true});
+    this.props.handleListenOnKeyboard();
   }
 
   onFormCancel(e){
