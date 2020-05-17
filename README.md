@@ -92,6 +92,8 @@ this.setState((prevArr)=>{
 
 优化：
 1. `note-section`里关于抓取记录的性能优化，删除记录后不再重新抓取。
+2. 使用`useReducer`管理记录状态
+3. 移动端适配：取消`keydown`事件；媒体查询与inline-style
 
 ## Notes
 ### About Ant Design
