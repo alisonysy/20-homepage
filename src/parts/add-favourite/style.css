@@ -12,3 +12,13 @@
   top:0;
   cursor: pointer;
 }
+.addFavourite-modal .ant-modal-header{
+  background-image: linear-gradient(to left, #c6c09c 0%, #f5cec7 100%) !important;
+}
+.addFavourite-modal .ant-modal-title{
+  color:#fff;
+  font-style:italic;
+}
+.addFavourite-modal .ant-modal-close{
+  color:#fff
+}

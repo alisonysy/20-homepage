@@ -351,7 +351,7 @@ class Note extends React.Component{
     let {tags,content,urgency,todos,loading} = this.state;
 
     return (
-      <Card hoverable className="note theme-comfort-boxShadow theme-comfort-noteCard-border" style={{cursor:'default',flexShrink:0}}>
+      <Card hoverable className="note theme-comfort-boxShadow theme-comfort-noteCard-border" style={{cursor:'default',flexShrink:0,textAlign:'center'}}>
         { isEdit?
           (<Form onFinish={this.onFormSubmit} ref={this.form} >
           <Form.Item name={id? id+"-urgency":"urgency"} >
@@ -404,7 +404,7 @@ class Note extends React.Component{
                 {todos.map((t,idx)=>(
                   <Form.Item key={'todo-'+idx}>
                     <TodoState handleTodoState={()=>{}} todoId={idx} state={t.state}/>
-                    <div style={{display:'inline-block',width:'75%',textAlign:'left'}}>{t.note}</div>
+                    <div style={{display:'inline-block',width:'75%',textAlign:'left',verticalAlign:'middle'}}>{t.note}</div>
                   </Form.Item>
                 ))}
               </div>

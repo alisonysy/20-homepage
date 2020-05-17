@@ -47,9 +47,14 @@
 .theme-comfort-websiteCard-background{
   background-image: linear-gradient(to top, #c6c09c 0%, #f5cec7 100%) !important;
 }
+
 .theme-comfort-websiteCard-fontColor.ant-card{
   color:#fff;
 }
+.theme-comfort-websiteCard-border{
+  border:4px dashed #c6c09c !important;
+}
+
 .theme-comfort-noteCard-border{
   border:1px solid rgba(245,206,199,0.4) !important;
 }

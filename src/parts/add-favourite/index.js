@@ -259,6 +259,18 @@ const addFavouriteWrapperStyle = {
   maxWidth:200,
   width:'30%',
 }
+const addFavouriteButtonStyle = {
+  position:'absolute',
+  left:'50%',
+  top:'50%',
+  transform:'translate(-50%,-50%)',
+  borderRadius:'50%',
+  fontSize:'3em',
+  width:'50%',
+  height:'50%',
+  background:'transparent',
+  boxShadow:'none'
+}
 export default class AddFavourite extends React.Component{
   constructor(props){
     super(props);
@@ -283,14 +295,16 @@ export default class AddFavourite extends React.Component{
     const {visible,loading} = this.state;
     return (
       <div style={{...addFavouriteWrapperStyle,display:'inline-block',float:'left'}}>
-        <Button type="primary" onClick={this.openForm} style={{width:'100%',paddingTop:'100%',position:'relative',borderRadius:'5%',border:'none'}} className="theme-comfort-websiteCard-background">
-          
-        </Button>
+        <div style={{paddingTop:'100%',width:'100%',position:'relative'}}>
+          <Button type="primary" onClick={this.openForm} style={addFavouriteButtonStyle} className="theme-comfort-websiteCard-border theme-comfort-helpText">
+            +
+          </Button>
+        </div>
         <Modal
           visible={visible}
           centered={true}
           title="Add a favourite"
-
+          className="addFavourite-modal"
           style={{borderRadius:'5%'}}
           onCancel={this.onFormCancel}
           footer={null}
