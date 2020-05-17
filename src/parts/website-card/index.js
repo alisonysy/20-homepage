@@ -4,8 +4,8 @@ import './style.css';
 import {appendHttp} from '../../utils/strings';
 import {ico_placeholder} from '../../utils/constants';
 
-import { Card, Typography, Avatar } from 'antd';
-import Tag from '../../components/tag';
+import { Card, Typography, Avatar, Tooltip } from 'antd';
+import Tag,{TagWithTooltip} from '../../components/tag';
 
 function Favicon(props){
   let [url,setUrl] = useState('')
@@ -91,7 +91,9 @@ export default class WebsiteCard extends React.Component {
               <div>
                 {tags.length? 
                   tags.map((t)=>{
-                    return <Tag color={t.color? t.color: '#ddd'} key={'websiteCard-tag-'+t.name}>{t.name}</Tag>
+                    return (
+                      TagWithTooltip(t.color? t.color:'#ddd',t.name)
+                    )
                   }):null
                 }
                 <Typography.Title level={4} style={{...inlineStyle.font,display:'inline-block',verticalAlign:'middle'}}>{this.state.category}</Typography.Title>
