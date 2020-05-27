@@ -4,8 +4,8 @@ import './style.css';
 import {appendHttp} from '../../utils/strings';
 import {ico_placeholder} from '../../utils/constants';
 
-import { Card, Typography, Avatar, Tooltip } from 'antd';
-import Tag,{TagWithTooltip} from '../../components/tag';
+import { Card, Typography, Avatar } from 'antd';
+import {TagWithTooltip} from '../../components/tag';
 
 function Favicon(props){
   let [url,setUrl] = useState('')

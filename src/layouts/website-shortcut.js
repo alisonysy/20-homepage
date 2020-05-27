@@ -38,7 +38,7 @@ export default function WebsiteShortcut(props){
     <div style={{textAlign:'left'}}>
     {
       records.map((r)=>{
-        let tags = r.tags, tagsRecord=[];
+        let tags = r.tags;
         for(let t=0;t<allTags.length;t++){
           for(let i=0;i<tags.length;i++){
             if(allTags[t].name === tags[i].name){

@@ -1,11 +1,10 @@
-import React, {useRef,useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import './style.css';
 
 import { Modal, Button, Form, Input, Tag, Row, Col, Popover, Radio } from 'antd';
 
 import {saveData,saveAll,fetchAllRecords,handleDataResults} from '../../data-service/data-handling';
 import {generateRandomColor} from '../../utils/color';
-import { Relation } from 'leancloud-storage';
 
 function TagField({rules,layout,outputTags}){
 
@@ -188,7 +187,7 @@ function AddFavouriteForm(props){
   }
   const closingTag = (t) => {
     t.persist();
-    let tagToRemove = t.target.parentElement.parentElement.textContent;
+    let tagToRemove = t.target.parentElement.parentElement.textContent; // #toDo: use findParentEl from utils
     for(let t=0;t<tagsArr.length;t++){
       console.log(tagsArr[t],tagToRemove);
       if(tagsArr[t].name===tagToRemove){
@@ -240,7 +239,6 @@ function AddFavouriteForm(props){
       {tagsArr.length>0? (<Row className="addFavouriteForm--tagsBoard">
         <Col span={formItemLayout.labelCol.span}></Col>
         {tagsArr.map((t)=>{
-          console.log('---rendered',t)
           return (
             <WrappedTag key={ "tag-"+ t.name} name={t.name} changeTagColor={changeTagColor} closingTag={closingTag} tagsRecord={tagsRecord}/>
           );

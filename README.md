@@ -98,3 +98,35 @@ this.setState((prevArr)=>{
 ## Notes
 ### About Ant Design
 类组件的表单实例需要通过`React.createRef()`创建`ref`取得，而函数组件的表单实例通过`const {form} = Form`和`<Form form={form}></Form>`获得。
+
+## 状态管理
+### global:
+isKeyboardListenerOn - **show** if a user can press a key and open a new tab
+
+### layout - website:
+all records of favourite sites - category, domain, icon, url, key, tags, title
+all records of tags - name, color 
+isKeyboardListenerOn - **determine** if the user can press a key and open a new tab
+
++ component - websiteCard:
+individual record of favourite site
+|- component - favIcon: url, icon
+|- component - tagWithTooltip: tags
+*#toConsider*: not registering `keydown` event inside each card, but lifting it up instead
+
++ component - addFavourite:
+props.handleListenOnKeyboard be called on modal open
+modal visibility, modal loading - *local state*
+hold tags info for form submitting 
+|- component - tags: tag input field and tag display field (wrappedTag that enables click-to-generate color if no color is assigned, or click-to-change color otherwise)
+|-- component - wrappedTag: tag itself and popover (be on when the tag color exists in db, handle whether to change color - yes to generate new color, no to stay the same)
+
+### layout - note:
+all records of notes: add, edit; delete
+notes on db, empty note form
+|- component - note: id, isNew, content, created, tags, urgency, isEdit
+#toDo: integrate the form on edit mode and display mode, with `Form` element
+|-- component - tags: tag input field (hidden on display mode) and tag display field
+|-- component - todos: state and text
+|--- component - todos on edit mode: todos. Update todo state and text input to parent, and add a new todo input field
+|---- component - todoState: click to change state, render state from parent
