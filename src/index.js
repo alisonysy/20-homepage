@@ -4,6 +4,9 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
+import {Provider} from 'react-redux';
+import {store} from './store/index';
+
 import {leanCloudId,leanCloudKey,serverUrl} from './data-service/leancloud.config';
 var AV = require('leancloud-storage');
 AV.init({
@@ -12,7 +15,12 @@ AV.init({
   serverURLs: serverUrl
 });
 
-ReactDOM.render(<App />, document.getElementById('root'));
+ReactDOM.render(
+  <Provider store={store}>
+    <App />
+  </Provider>, 
+  document.getElementById('root')
+);
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
