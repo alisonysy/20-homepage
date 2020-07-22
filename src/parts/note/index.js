@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
+import TodoState from '../../components/todoState';
 import {Card, Button, Rate, Input, Tag, Form, Row, Typography, Select} from 'antd';
 import {DeleteFilled, PlusCircleOutlined,MinusCircleOutlined,ClockCircleOutlined,CheckCircleOutlined} from '@ant-design/icons';
 import './style.css';
@@ -17,6 +18,7 @@ function AddNote(){
   )
 }
 
+/*
 function TodoState(props){
   const todo = 'todo', doing = 'doing', done = 'done';
   const stateArr = [todo,doing,done];
@@ -55,6 +57,7 @@ function TodoState(props){
     </div>
   )
 }
+*/
 
 function DynamicTodo(props){
   

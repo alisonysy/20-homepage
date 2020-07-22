@@ -15,6 +15,8 @@ AV.init({
   serverURLs: serverUrl
 });
 
+console.log('store is',store.getState())
+
 ReactDOM.render(
   <Provider store={store}>
     <App />

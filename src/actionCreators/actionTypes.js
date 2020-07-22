@@ -1,0 +1,1 @@
+export const SWITCH_TODO_STATE = "note/switchTodoState";

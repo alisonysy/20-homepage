@@ -1,6 +1,8 @@
+import {combineReducers} from 'redux';
+import noteReducer from './noteReducer';
 const initialState = {};
 
-export default function(state = initialState, action){
+function rootReducer(state = initialState, action){
   switch(action.type){
     case 'note':
       break;
@@ -8,3 +10,7 @@ export default function(state = initialState, action){
       break;
   }
 }
+
+export default combineReducers({
+  notes:noteReducer
+})
